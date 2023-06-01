@@ -10,6 +10,7 @@ namespace Connect4Group1FinalProject
     {
         static void Main(string[] args)
         {
+            Console.WriteLine("Hello");
         }
     }
 }
