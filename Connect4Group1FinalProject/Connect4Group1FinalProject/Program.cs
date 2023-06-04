@@ -17,7 +17,7 @@ namespace Connect4Group1FinalProject
     {
         Empty,
         Xeno,
-        Yao
+        Oni
     }
 
     //Class to representing the game board
@@ -81,8 +81,8 @@ namespace Connect4Group1FinalProject
                         case CellState.Xeno:
                             Console.Write("X");
                             break;
-                        case CellState.Yao:
-                            Console.Write("Y");
+                        case CellState.Oni:
+                            Console.Write("O");
                             break;
                         default:
                             throw new NotImplementedException();
@@ -94,15 +94,115 @@ namespace Connect4Group1FinalProject
     }
 
 
-        class Player
-        {
-            public CellState PlayerType { get; }
+    class Player
+    {
+         public CellState PlayerType { get; }
 
-            public Player(CellState playerType)
+         public Player(CellState playerType)
+         {
+             PlayerType = playerType;
+         }
+
+         public virtual int GetMove(Board board)
+         {
+             Console.WriteLine("Enter the column number (1-7): ");
+             int move = int.Parse(Console.ReadLine());
+             return move - 1; // This will make so if 1 is entered it will be 0 instead so the inputs are 1 - 7 instead of 0 - 6
+         }
+    }
+
+    // Class that will manage the game
+    class ConnectFourGame
+    {
+        private readonly Board board;
+        private readonly Player player1;
+        private readonly Player player2;
+        private Player currentPlayer;
+        private int lastMove; // Will help with ai
+
+        public ConnectFourGame(PlayerType player1Type, PlayerType player2Type)
+        {
+            board = new Board();
+
+            switch (player1Type)
             {
-                PlayerType = playerType;
+                case PlayerType.Human:
+                    player1 = new Player(CellState.Xeno);
+                    break;
+                case PlayerType.AI:
+                    //Add ai selector once ai is made
+                    break;
+                default:
+                    throw new NotImplementedException();
             }
+
+            switch (player2Type)
+            {
+                case PlayerType.Human:
+                    player2 = new Player(CellState.Oni);
+                    break;
+                case PlayerType.AI:
+                    // Same as in player1
+                    break;
+                default:
+                    throw new NotImplementedException();
+
+            }
+
+            currentPlayer = player1;
+            lastMove = -1;
         }
+
+        public void Start()
+        {
+            Console.WriteLine("Group 1 Connect Four Game");
+            Console.WriteLine("Enter the column number (1-7) to make a move.");
+            Console.WriteLine();
+
+            while (true)
+            {
+                Console.Clear();
+                board.PrintBoard();
+                int move = currentPlayer.GetMove(board);
+                if (board.PlaceDisc(move, currentPlayer.PlayerType))
+                {
+                    if (board.IsGameOver(currentPlayer.PlayerType))
+                    {
+                        Console.Clear();
+                        board.PrintBoard();
+                        Console.WriteLine($"Player {currentPlayer.PlayerType} wins!");
+                        break;
+                    }
+
+                    if (IsBoardFull())
+                    {
+                        Console.WriteLine("It's a draw!");
+                        break;
+                    }
+
+                    currentPlayer = (currentPlayer == player1) ? player2 : player1;
+                }
+                else
+                {
+                    Console.WriteLine("Column is full. Try again.");
+                    Console.Read();
+                }
+            }
+
+        }
+
+        private bool IsBoardFull()
+        {
+            for (int col = 0; col < 7; col++)
+            {
+                if (!board.IsColumnFull(col))
+                    return false;
+            }
+            return true;
+        }
+    }
+
+
 
     internal class Program
     {
