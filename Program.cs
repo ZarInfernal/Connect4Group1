@@ -30,7 +30,7 @@ namespace Connect4Game
         }
         public void DrawBoard()
         {
-            Console.WriteLine("  1 2 3 4 5 6 7");
+            Console.WriteLine(" 1 2 3 4 5 6 7");
             Console.WriteLine("---------------");
             for (int row = 0; row < Rows; row++)
             {
