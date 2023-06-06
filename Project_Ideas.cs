@@ -146,55 +146,38 @@ namespace Connect4Game
         }
 
     }
-    //This is just a test case, but game is functional already
-    //Will add more classes to make it Final
+      // Player class
+    class Player
+    { 
+        public string Name { get; private set; }
+        public char Symbol { get; private set; }
+        public Player(string name, char symbol) 
+        {
+            Name = name;
+            Symbol = symbol;
+        }
+        public int GetMove()
+        {
+            Console.WriteLine("Player{Name}, enter your move(1-7): ");
+            string input = Console.ReadLine();
+            int move;
+            //While loop to check if User(Players) input is 1 >= 7, if not output invalid input/move
+            while (!int.TryParse(input, out move) || move < 1 || move > GameBoard.Columns)
+            {
+                Console.WriteLine("Invalid move. Please enter a valid column number.");
+                input = Console.ReadLine();
+            }
+            //returns move subtracted to 1 to convert indexing which starts from 0
+            // now it starts from 1 and ends with 7
+            return move - 1;
+        }
+    }
+    
     class Program
     {
         static void Main(string[] args)
         {
-            Console.WriteLine("Welcome to Connect 4!");
-
-            GameBoard gameBoard = new GameBoard();
-            char currentPlayer = 'X';
-
-            while (true)
-            {
-                gameBoard.DrawBoard();
-                Console.WriteLine($"Player {currentPlayer}, enter the column (1-7): ");
-                string input = Console.ReadLine();
-                if (int.TryParse(input, out int col))
-                {
-                    col--;
-                    if (gameBoard.IsValidMove(col))
-                    {
-                        gameBoard.MakeMove(col, currentPlayer);
-                        if (gameBoard.CheckWinCondition(currentPlayer))
-                        {
-                            gameBoard.DrawBoard();
-                            Console.WriteLine($"Player {currentPlayer} wins!");
-                            break;
-                        }
-                        else if (gameBoard.IsBoardFull())
-                        {
-                            gameBoard.DrawBoard();
-                            Console.WriteLine("It's a tie!");
-                            break;
-                        }
-                        currentPlayer = currentPlayer == 'X' ? '#' : 'X';
-                    }
-                    else
-                    {
-                        Console.WriteLine("Invalid move! Try again.");
-                    }
-                }
-                else
-                {
-                    Console.WriteLine("Invalid input! Try again.");
-                }
-            }
-
-            Console.WriteLine("Thank you for playing Connect 4!");
-      
+           
         }
     }
 
