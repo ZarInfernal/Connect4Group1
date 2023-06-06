@@ -7,13 +7,13 @@ using System.Threading.Tasks;
 namespace Connect4Group1FinalProject
 {
     // Enum to represent the different players
-    enum PlayerType
+    public enum PlayerType
     {
         Human,
         AI
     }
     // Enum to represent the different cell states on the board
-    enum CellState
+    public enum CellState
     {
         Empty,
         Xeno,
@@ -21,7 +21,7 @@ namespace Connect4Group1FinalProject
     }
 
     //Class to representing the game board
-    class Board
+    public class Board
     {
         public const int Rows = 6;
         public const int Cols = 7;
