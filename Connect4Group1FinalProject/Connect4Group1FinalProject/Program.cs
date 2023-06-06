@@ -208,7 +208,53 @@ namespace Connect4Group1FinalProject
     {
         static void Main(string[] args)
         {
-            Console.WriteLine("Hello");
+        Console.WriteLine("Connect Four Game");
+        Console.WriteLine("=================");
+        Console.WriteLine("Game Modes:");
+        Console.WriteLine("1. Human vs. Human");
+        Console.WriteLine("2. Human vs. AI");
+        Console.WriteLine("3. AI vs. AI");
+        Console.WriteLine();
+
+        int mode;
+        while (true)
+        {
+            Console.Write("Enter the game mode (1-3): ");
+            if (int.TryParse(Console.ReadLine(), out mode) && mode >= 1 && mode <= 3)
+            {
+                break;
+            }
+            else
+            {
+                Console.WriteLine("Invalid input. Please enter a valid game mode.");
+                Console.WriteLine();
+            }
+        }
+
+        PlayerType player1Type, player2Type;
+        switch (mode)
+        {
+            case 1:
+                player1Type = PlayerType.Human;
+                player2Type = PlayerType.Human;
+                break;
+            case 2:
+                player1Type = PlayerType.Human;
+                player2Type = PlayerType.AI;
+                break;
+            case 3:
+                player1Type = PlayerType.AI;
+                player2Type = PlayerType.AI;
+                break;
+            default:
+                Console.WriteLine("Invalid game mode.");
+                return;
+        }
+
+        ConnectFourGame game = new ConnectFourGame(player1Type, player2Type);
+        game.Start();
+
+            
         }
     }
 }
