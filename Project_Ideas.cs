@@ -156,7 +156,7 @@ namespace Connect4Game
             Name = name;
             Symbol = symbol;
         }
-        public int GetMove()
+        public virtual int GetMove()
         {
             Console.WriteLine("Player{Name}, enter your move(1-7): ");
             string input = Console.ReadLine();
@@ -170,6 +170,18 @@ namespace Connect4Game
             //returns move subtracted to 1 to convert indexing which starts from 0
             // now it starts from 1 and ends with 7
             return move - 1;
+        }
+    }
+    //AI class that is inherited from Player class
+    class AI : Player
+    {
+        public AI(char symbol) : base("AI", symbol) { }
+        public override int GetMove()
+        {
+            //Now, we implement AI logic to choose a move that generates a random move
+            Random random = new Random();
+            int move = random.Next(0, GameBoard.Columns);
+            return move;
         }
     }
     
