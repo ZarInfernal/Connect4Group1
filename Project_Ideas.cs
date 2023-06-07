@@ -76,17 +76,8 @@ namespace Connect4Game
         {
             for (int row = 0; row < Rows; row++)
             {
-                for (int col = 0; col <= Columns - 4; col++)
-                {
-                    if (board[row, col] != '-' &&
-                        board[row, col] == playerSymbol &&
-                        board[row, col] == board[row, col + 1] &&
-                        board[row, col] == board[row, col + 2] &&
-                        board[row, col] == board[row, col + 3])
-                    {
-                        return true;
-                    }
-                }
+                if (CheckSequence(playerSymbol, board[row, 0], board[row, 1], board[row, 2], board[row, 3]))
+                    return true;
             }
             return false;
         }
@@ -94,55 +85,40 @@ namespace Connect4Game
         {
             for (int col = 0; col < Columns; col++)
             {
-                for (int row = 0; row <= Rows - 4; row++)
-                {
-                    if (board[row, col] != '-' &&
-                        board[row, col] == playerSymbol &&
-                        board[row, col] == board[row + 1, col] &&
-                        board[row, col] == board[row + 2, col] &&
-                        board[row, col] == board[row + 3, col])
-                    {
-                        return true;
-                    }
-                }
+                if (CheckSequence(playerSymbol, board[0, col], board[1, col], board[2, col], board[3, col]))
+                    return true;
             }
             return false;
         }
         private bool CheckDiagonal(char playerSymbol)
         {
-            // Check diagonals from top-left to bottom-right
             for (int row = 0; row <= Rows - 4; row++)
             {
                 for (int col = 0; col <= Columns - 4; col++)
                 {
-                    if (board[row, col] != '-' &&
-                        board[row, col] == playerSymbol &&
-                        board[row, col] == board[row + 1, col + 1] &&
-                        board[row, col] == board[row + 2, col + 2] &&
-                        board[row, col] == board[row + 3, col + 3])
-                    {
+                    if (CheckSequence(playerSymbol, board[row, col], board[row + 1, col + 1], board[row + 2, col + 2], board[row + 3, col + 3]))
                         return true;
-                    }
                 }
             }
 
-            // Check diagonals from top-right to bottom-left
             for (int row = 0; row <= Rows - 4; row++)
             {
                 for (int col = Columns - 1; col >= 3; col--)
                 {
-                    if (board[row, col] != '-' &&
-                        board[row, col] == playerSymbol &&
-                        board[row, col] == board[row + 1, col - 1] &&
-                        board[row, col] == board[row + 2, col - 2] &&
-                        board[row, col] == board[row + 3, col - 3])
-                    {
+                    if (CheckSequence(playerSymbol, board[row, col], board[row + 1, col - 1], board[row + 2, col - 2], board[row + 3, col - 3]))
                         return true;
-                    }
                 }
             }
 
             return false;
+            private bool CheckSequence(char playerSymbol, params char[] sequence)
+        {
+            foreach (char c in sequence)
+            {
+                if (c != playerSymbol)
+                    return false;
+            }
+            return true;
         }
 
     }
@@ -158,15 +134,20 @@ namespace Connect4Game
         }
         public virtual int GetMove()
         {
-            Console.WriteLine("Player{Name}, enter your move(1-7): ");
-            string input = Console.ReadLine();
             int move;
-            //While loop to check if User(Players) input is 1 >= 7, if not output invalid input/move
-            while (!int.TryParse(input, out move) || move < 1 || move > GameBoard.Columns)
+            bool isValidMove = false;
+            //do-While loop to check if User(Players) input is 1 >= 7, if not output invalid input/move
+            do
             {
-                Console.WriteLine("Invalid move. Please enter a valid column number.");
-                input = Console.ReadLine();
-            }
+                Console.Write($"{Name}, enter your move (1-7): ");
+                string input = Console.ReadLine();
+
+                isValidMove = int.TryParse(input, out move) && move >= 1 && move <= GameBoard.Columns;
+
+                if (!isValidMove)
+                    Console.WriteLine("Invalid move. Please enter a valid column number.");
+
+            } while (!isValidMove);
             //returns move subtracted to 1 to convert indexing which starts from 0
             // now it starts from 1 and ends with 7
             return move - 1;
@@ -180,8 +161,7 @@ namespace Connect4Game
         {
             //Now, we implement AI logic to choose a move that generates a random move
             Random random = new Random();
-            int move = random.Next(0, GameBoard.Columns);
-            return move;
+            return random.Next(0, GameBoard.Columns);
         }
     }
     
