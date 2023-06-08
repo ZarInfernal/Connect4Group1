@@ -23,7 +23,7 @@ namespace Connect4Group1FinalProject
     // Interface for the players
     interface IPlayer
     {
-        CellState PlayerType { get; }
+        CellState playerType { get; }
         int GetMove(Board board);
     }
 
@@ -121,9 +121,9 @@ namespace Connect4Group1FinalProject
 
         private bool CheckDiagonal(CellState player)
         {
-            for (int row = 0; row <= Rows - 4; row++)
+            for (int row = 0; row < Rows - 3; row++)
             {
-                for (int col = 0; col <= Cols - 4; col++)
+                for (int col = 0; col < Cols - 3; col++)
                 {
                     if (CheckSequence(player, cells[row, col], cells[row + 1, col + 1], cells[row + 2, col + 2], cells[row + 3, col + 3]))
                     {
@@ -132,7 +132,7 @@ namespace Connect4Group1FinalProject
                 }
             }
 
-            for (int row = 0; row <= Rows; row++)
+            for (int row = 0; row < Rows - 3; row++)
             {
                 for (int col = Cols-1; col >= 3; col--)
                 {
@@ -147,7 +147,7 @@ namespace Connect4Group1FinalProject
 
         private bool CheckSequence(CellState player, params CellState[] cellState)
         {
-            foreach (CellState cell in cells)
+            foreach (CellState cell in cellState)
             {
                 if (cell == CellState.Empty)
                     return false;
@@ -176,6 +176,7 @@ namespace Connect4Group1FinalProject
                             throw new NotImplementedException();
                     }
                 }
+                Console.WriteLine();
             }
         }
 
@@ -183,11 +184,11 @@ namespace Connect4Group1FinalProject
 
     class Player : IPlayer
     {
-         public CellState PlayerType { get; }
+         public CellState playerType { get; }
 
-         public Player(CellState playerType)
+         public Player(CellState PlayerType)
          {
-             PlayerType = playerType;
+             playerType = PlayerType;
          }
 
          public virtual int GetMove(Board board)
@@ -202,11 +203,11 @@ namespace Connect4Group1FinalProject
     {
         private readonly int difficulty;
 
-        public CellState PlayerType { get; }
+        public CellState playerType { get; }
 
         public AIPlayer(CellState playerColor, int difficulty)
         {
-            PlayerType = playerColor;
+            playerType = playerColor;
             this.difficulty = difficulty;
         }
 
@@ -217,12 +218,28 @@ namespace Connect4Group1FinalProject
 
             int move = Minimax(board, difficulty, int.MinValue, int.MaxValue, true).move;
 
+            // If no valid move is found, choose a random move from the available columns
+            if (move == -1)
+            {
+                List<int> availableColumns = new List<int>();
+                for (int col = 0; col < Board.Cols; col++)
+                {
+                    if (!board.IsColumnFull(col))
+                    {
+                        availableColumns.Add(col);
+                    }
+                }
+
+                Random random = new Random();
+                move = availableColumns[random.Next(availableColumns.Count)];
+            }
+
             return move;
         }
 
         private (int move, int score) Minimax(Board board, int depth, int alpha, int beta, bool maximizingPlayer)
         {
-            if (depth == 0 || board.IsGameOver(PlayerType) || board.IsGameOver(GetOpponentPlayerType()))
+            if (depth == 0 || board.IsGameOver(playerType) || board.IsGameOver(GetOpponentPlayerType()))
             {
                 return (move: -1, score: EvaluateBoard(board));
             }
@@ -234,7 +251,7 @@ namespace Connect4Group1FinalProject
             {
                 if (!board.IsColumnFull(col))
                 {
-                    board.PlaceDisc(col, maximizingPlayer ? PlayerType : GetOpponentPlayerType());
+                    board.PlaceDisc(col, maximizingPlayer ? playerType : GetOpponentPlayerType());
 
                     int score = Minimax(board, depth - 1, alpha, beta, !maximizingPlayer).score;
 
@@ -322,7 +339,7 @@ namespace Connect4Group1FinalProject
             {
                 CellState cell = board.GetCell(startRow + i * rowIncrement, startCol + i * colIncrement);
 
-                if (cell == PlayerType)
+                if (cell == playerType)
                 {
                     playerCount++;
                 }
@@ -370,7 +387,7 @@ namespace Connect4Group1FinalProject
 
         private CellState GetOpponentPlayerType()
         {
-            return PlayerType == CellState.Xeno ? CellState.Oni : CellState.Xeno;
+            return playerType == CellState.Xeno ? CellState.Oni : CellState.Xeno;
         }
     }
 
@@ -403,13 +420,13 @@ namespace Connect4Group1FinalProject
                 Console.Clear();
                 board.PrintBoard();
                 int move = currentPlayer.GetMove(board);
-                if (board.PlaceDisc(move, currentPlayer.PlayerType))
+                if (board.PlaceDisc(move, currentPlayer.playerType))
                 {
-                    if (board.IsGameOver(currentPlayer.PlayerType))
+                    if (board.IsGameOver(currentPlayer.playerType))
                     {
                         Console.Clear();
                         board.PrintBoard();
-                        Console.WriteLine($"Player {currentPlayer.PlayerType} wins!");
+                        Console.WriteLine($"Player {currentPlayer.playerType} wins!");
                         break;
                     }
 

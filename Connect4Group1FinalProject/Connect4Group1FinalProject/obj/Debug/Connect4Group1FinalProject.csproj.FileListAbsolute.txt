@@ -1,0 +1,8 @@
+D:\School\SODV1202\Final Project\Connect4Group1\Connect4Group1FinalProject\Connect4Group1FinalProject\bin\Debug\Connect4Group1FinalProject.exe.config
+D:\School\SODV1202\Final Project\Connect4Group1\Connect4Group1FinalProject\Connect4Group1FinalProject\bin\Debug\Connect4Group1FinalProject.exe
+D:\School\SODV1202\Final Project\Connect4Group1\Connect4Group1FinalProject\Connect4Group1FinalProject\bin\Debug\Connect4Group1FinalProject.pdb
+D:\School\SODV1202\Final Project\Connect4Group1\Connect4Group1FinalProject\Connect4Group1FinalProject\obj\Debug\Connect4Group1FinalProject.csproj.AssemblyReference.cache
+D:\School\SODV1202\Final Project\Connect4Group1\Connect4Group1FinalProject\Connect4Group1FinalProject\obj\Debug\Connect4Group1FinalProject.csproj.SuggestedBindingRedirects.cache
+D:\School\SODV1202\Final Project\Connect4Group1\Connect4Group1FinalProject\Connect4Group1FinalProject\obj\Debug\Connect4Group1FinalProject.csproj.CoreCompileInputs.cache
+D:\School\SODV1202\Final Project\Connect4Group1\Connect4Group1FinalProject\Connect4Group1FinalProject\obj\Debug\Connect4Group1FinalProject.exe
+D:\School\SODV1202\Final Project\Connect4Group1\Connect4Group1FinalProject\Connect4Group1FinalProject\obj\Debug\Connect4Group1FinalProject.pdb
