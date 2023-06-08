@@ -93,7 +93,7 @@ namespace Connect4Group1FinalProject
         {
             for (int row = 0; row < Rows; row++)
             {
-                for (int col = 0; col < Cols - 4; col++)
+                for (int col = 0; col < Cols - 3; col++)
                 {
                     if (CheckSequence(player, cells[row, col], cells[row, col+1], cells[row, col+2], cells[row, col+3]))
                     {
@@ -108,7 +108,7 @@ namespace Connect4Group1FinalProject
         {
             for (int col = 0; col < Cols; col++)
             {
-                for (int row = 0; row < Rows - 4; row++)
+                for (int row = 0; row < Rows - 3; row++)
                 {
                     if (CheckSequence(player, cells[row, col], cells[row + 1, col], cells[row + 2, col], cells[row + 3, col]))
                     {
@@ -134,7 +134,7 @@ namespace Connect4Group1FinalProject
 
             for (int row = 0; row < Rows - 3; row++)
             {
-                for (int col = Cols-1; col >= 3; col--)
+                for (int col = Cols-1; col >= Cols - 4; col--)
                 {
                     if (CheckSequence(player, cells[row, col], cells[row + 1, col - 1], cells[row + 2, col - 2], cells[row + 3, col - 3]))
                     {
@@ -149,7 +149,7 @@ namespace Connect4Group1FinalProject
         {
             foreach (CellState cell in cellState)
             {
-                if (cell == CellState.Empty)
+                if (cell != player)
                     return false;
             }
             return true;
@@ -498,8 +498,8 @@ namespace Connect4Group1FinalProject
                 player2 = new AIPlayer(CellState.Oni, 1);
                 break;
             case 3:
-                player1 = new AIPlayer(CellState.Xeno, 1);
-                player2 = new AIPlayer(CellState.Oni, 1);
+                player1 = new AIPlayer(CellState.Xeno, 10);
+                player2 = new AIPlayer(CellState.Oni, 10);
                 break;
             default:
                 Console.WriteLine("Invalid game mode.");
