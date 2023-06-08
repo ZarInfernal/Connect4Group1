@@ -7,13 +7,13 @@ using System.Threading.Tasks;
 namespace Connect4Group1FinalProject
 {
     // Enum to represent the different players
-    public enum PlayerType
+    enum PlayerType
     {
         Human,
         AI
     }
     // Enum to represent the different cell states on the board
-    public enum CellState
+    enum CellState
     {
         Empty,
         Xeno,
@@ -21,7 +21,7 @@ namespace Connect4Group1FinalProject
     }
 
     //Class to representing the game board
-    public class Board
+    class Board
     {
         public const int Rows = 6;
         public const int Cols = 7;
@@ -63,8 +63,73 @@ namespace Connect4Group1FinalProject
 
         public bool IsGameOver(CellState player)
         {
-            // Check for winning conditions (Will come back later)
+            return CheckHorizontal(player) || CheckVertical(player) || CheckDiagonal(player);
+        }
+
+        private bool CheckHorizontal(CellState player)
+        {
+            for (int row = 0; row < Rows; row++)
+            {
+                for (int col = 0; col < Cols - 4; col++)
+                {
+                    if (CheckSequence(player, cells[row, col], cells[row, col+1], cells[row, col+2], cells[row, col+3]))
+                    {
+                        return true;
+                    }
+                }
+            }
             return false;
+        }
+
+        private bool CheckVertical(CellState player)
+        {
+            for (int col = 0; col < Cols; col++)
+            {
+                for (int row = 0; row < Rows - 4; row++)
+                {
+                    if (CheckSequence(player, cells[row, col], cells[row + 1, col], cells[row + 2, col], cells[row + 3, col]))
+                    {
+                        return true;
+                    }
+                }
+            }
+            return false;
+        }
+
+        private bool CheckDiagonal(CellState player)
+        {
+            for (int row = 0; row <= Rows - 4; row++)
+            {
+                for (int col = 0; col <= Cols - 4; col++)
+                {
+                    if (CheckSequence(player, cells[row, col], cells[row + 1, col + 1], cells[row + 2, col + 2], cells[row + 3, col + 3]))
+                    {
+                        return true;
+                    }
+                }
+            }
+
+            for (int row = 0; row <= Rows; row++)
+            {
+                for (int col = Cols-1; col >= 3; col--)
+                {
+                    if (CheckSequence(player, cells[row, col], cells[row + 1, col - 1], cells[row + 2, col - 2], cells[row + 3, col - 3]))
+                    {
+                        return true;
+                    }
+                }
+            }
+            return false;
+        }
+
+        private bool CheckSequence(CellState player, params CellState[] cellState)
+        {
+            foreach (CellState cell in cells)
+            {
+                if (cell == CellState.Empty)
+                    return false;
+            }
+            return true;
         }
 
         public void PrintBoard()
