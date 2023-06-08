@@ -20,7 +20,14 @@ namespace Connect4Group1FinalProject
         Oni
     }
 
-    //Class to representing the game board
+    // Interface for the players
+    interface IPlayer
+    {
+        CellState PlayerType { get; }
+        int GetMove(Board board);
+    }
+
+    // Class to representing the game board
     class Board
     {
         public const int Rows = 6;
@@ -45,6 +52,12 @@ namespace Connect4Group1FinalProject
         {
             return cells[0, col] != CellState.Empty;
         }
+
+        public CellState GetCell(int row, int col)
+        {
+            return cells[row, col];
+        }
+
         public bool PlaceDisc(int col, CellState player) //Input player cellstate
         {
             for (int row = Rows - 1; row >= 0; row--)
@@ -59,7 +72,17 @@ namespace Connect4Group1FinalProject
             return false; //Column is full
         }
 
-        //Make another class here to help with ai later
+        public void RemoveDisc(int col)
+        {
+            for (int row = 0; row < Rows; row++)
+            {
+                if (cells[row, col] != CellState.Empty)
+                {
+                    cells[row, col] = CellState.Empty;
+                    break;
+                }
+            }
+        }
 
         public bool IsGameOver(CellState player)
         {
@@ -158,8 +181,7 @@ namespace Connect4Group1FinalProject
 
     }
 
-
-    class Player
+    class Player : IPlayer
     {
          public CellState PlayerType { get; }
 
@@ -176,44 +198,196 @@ namespace Connect4Group1FinalProject
          }
     }
 
+    class AIPlayer : IPlayer
+    {
+        private readonly int difficulty;
+
+        public CellState PlayerType { get; }
+
+        public AIPlayer(CellState playerColor, int difficulty)
+        {
+            PlayerType = playerColor;
+            this.difficulty = difficulty;
+        }
+
+        public int GetMove(Board board)
+        {
+            Console.WriteLine("AI is thinking...");
+            System.Threading.Thread.Sleep(1000);
+
+            int move = Minimax(board, difficulty, int.MinValue, int.MaxValue, true).move;
+
+            return move;
+        }
+
+        private (int move, int score) Minimax(Board board, int depth, int alpha, int beta, bool maximizingPlayer)
+        {
+            if (depth == 0 || board.IsGameOver(PlayerType) || board.IsGameOver(GetOpponentPlayerType()))
+            {
+                return (move: -1, score: EvaluateBoard(board));
+            }
+
+            int bestMove = -1;
+            int bestScore = maximizingPlayer ? int.MinValue : int.MaxValue;
+
+            for (int col = 0; col < Board.Cols; col++)
+            {
+                if (!board.IsColumnFull(col))
+                {
+                    board.PlaceDisc(col, maximizingPlayer ? PlayerType : GetOpponentPlayerType());
+
+                    int score = Minimax(board, depth - 1, alpha, beta, !maximizingPlayer).score;
+
+                    board.RemoveDisc(col);
+
+                    if (maximizingPlayer)
+                    {
+                        if (score > bestScore)
+                        {
+                            bestScore = score;
+                            bestMove = col;
+                        }
+                        alpha = Math.Max(alpha, bestScore);
+                    }
+                    else
+                    {
+                        if (score < bestScore)
+                        {
+                            bestScore = score;
+                            bestMove = col;
+                        }
+                        beta = Math.Min(beta, bestScore);
+                    }
+
+                    if (beta <= alpha)
+                    {
+                        break;
+                    }
+                }
+            }
+
+            return (move: bestMove, score: bestScore);
+        }
+
+        private int EvaluateBoard(Board board)
+        {
+            int score = 0;
+
+            // Evaluate rows
+            for (int row = 0; row < Board.Rows; row++)
+            {
+                for (int col = 0; col <= Board.Cols - 4; col++)
+                {
+                    score += EvaluateLine(board, row, col, 0, 1);
+                }
+            }
+
+            // Evaluate columns
+            for (int col = 0; col < Board.Cols; col++)
+            {
+                for (int row = 0; row <= Board.Rows - 4; row++)
+                {
+                    score += EvaluateLine(board, row, col, 1, 0);
+                }
+            }
+
+            // Evaluate diagonals (top-left to bottom-right)
+            for (int row = 0; row <= Board.Rows - 4; row++)
+            {
+                for (int col = 0; col <= Board.Cols - 4; col++)
+                {
+                    score += EvaluateLine(board, row, col, 1, 1);
+                }
+            }
+
+            // Evaluate diagonals (bottom-left to top-right)
+            for (int row = 3; row < Board.Rows; row++)
+            {
+                for (int col = 0; col <= Board.Cols - 4; col++)
+                {
+                    score += EvaluateLine(board, row, col, -1, 1);
+                }
+            }
+
+            return score;
+        }
+
+        private int EvaluateLine(Board board, int startRow, int startCol, int rowIncrement, int colIncrement)
+        {
+            int score = 0;
+            int playerCount = 0;
+            int opponentCount = 0;
+
+            for (int i = 0; i < 4; i++)
+            {
+                CellState cell = board.GetCell(startRow + i * rowIncrement, startCol + i * colIncrement);
+
+                if (cell == PlayerType)
+                {
+                    playerCount++;
+                }
+                else if (cell == GetOpponentPlayerType())
+                {
+                    opponentCount++;
+                }
+            }
+
+            if (playerCount == 4)
+            {
+                score += 1000;
+            }
+            else if (playerCount == 3 && opponentCount == 0)
+            {
+                score += 100;
+            }
+            else if (playerCount == 2 && opponentCount == 0)
+            {
+                score += 10;
+            }
+            else if (playerCount == 1 && opponentCount == 0)
+            {
+                score += 1;
+            }
+            else if (opponentCount == 4)
+            {
+                score -= 1000;
+            }
+            else if (opponentCount == 3 && playerCount == 0)
+            {
+                score -= 100;
+            }
+            else if (opponentCount == 2 && playerCount == 0)
+            {
+                score -= 10;
+            }
+            else if (opponentCount == 1 && playerCount == 0)
+            {
+                score -= 1;
+            }
+
+            return score;
+        }
+
+        private CellState GetOpponentPlayerType()
+        {
+            return PlayerType == CellState.Xeno ? CellState.Oni : CellState.Xeno;
+        }
+    }
+
     // Class that will manage the game
     class ConnectFourGame
     {
         private readonly Board board;
-        private readonly Player player1;
-        private readonly Player player2;
-        private Player currentPlayer;
+        private readonly IPlayer player1;
+        private readonly IPlayer player2;
+        private IPlayer currentPlayer;
         private int lastMove; // Will help with ai
 
-        public ConnectFourGame(PlayerType player1Type, PlayerType player2Type)
+        public ConnectFourGame(IPlayer player1, IPlayer player2)
         {
             board = new Board();
-
-            switch (player1Type)
-            {
-                case PlayerType.Human:
-                    player1 = new Player(CellState.Xeno);
-                    break;
-                case PlayerType.AI:
-                    //Add ai selector once ai is made
-                    break;
-                default:
-                    throw new NotImplementedException();
-            }
-
-            switch (player2Type)
-            {
-                case PlayerType.Human:
-                    player2 = new Player(CellState.Oni);
-                    break;
-                case PlayerType.AI:
-                    // Same as in player1
-                    break;
-                default:
-                    throw new NotImplementedException();
-
-            }
-
+            this.player1 = player1;
+            this.player2 = player2;
             currentPlayer = player1;
             lastMove = -1;
         }
@@ -268,7 +442,6 @@ namespace Connect4Group1FinalProject
     }
 
 
-
     internal class Program
     {
         static void Main(string[] args)
@@ -296,27 +469,27 @@ namespace Connect4Group1FinalProject
             }
         }
 
-        PlayerType player1Type, player2Type;
+        IPlayer player1, player2;
         switch (mode)
         {
             case 1:
-                player1Type = PlayerType.Human;
-                player2Type = PlayerType.Human;
+                player1 = new Player(CellState.Xeno);
+                player2 = new Player(CellState.Oni);
                 break;
             case 2:
-                player1Type = PlayerType.Human;
-                player2Type = PlayerType.AI;
+                player1 = new Player(CellState.Xeno);
+                player2 = new AIPlayer(CellState.Oni, 1);
                 break;
             case 3:
-                player1Type = PlayerType.AI;
-                player2Type = PlayerType.AI;
+                player1 = new AIPlayer(CellState.Xeno, 1);
+                player2 = new AIPlayer(CellState.Oni, 1);
                 break;
             default:
                 Console.WriteLine("Invalid game mode.");
                 return;
         }
 
-        ConnectFourGame game = new ConnectFourGame(player1Type, player2Type);
+        ConnectFourGame game = new ConnectFourGame(player1, player2);
         game.Start();
 
             
