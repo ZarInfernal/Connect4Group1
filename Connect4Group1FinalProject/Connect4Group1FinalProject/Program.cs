@@ -16,8 +16,9 @@ namespace Connect4Group1FinalProject
     enum CellState
     {
         Empty,
-        Xeno,
-        Oni
+        // Vergil: I updated Xeno and Oni back to Red and Yellow to make it clearer
+        Red,
+        Yellow
     }
 
     // Interface for the players
@@ -178,6 +179,16 @@ namespace Connect4Group1FinalProject
                 }
                 Console.WriteLine();
             }
+            Console.WriteLine();
+
+            Console.WriteLine("Player Moves:");
+            Console.WriteLine("=============");
+            foreach (string move in moveRecords)
+            {
+                Console.WriteLine(move);
+            }
+
+            Console.WriteLine();
         }
 
     }
@@ -392,69 +403,65 @@ namespace Connect4Group1FinalProject
     }
 
     // Class that will manage the game
-    class ConnectFourGame
-    {
-        private readonly Board board;
-        private readonly IPlayer player1;
-        private readonly IPlayer player2;
-        private IPlayer currentPlayer;
-        private int lastMove; // Will help with ai
+// Vergil: I updated the class ConnectFourGame to have the records of two players
 
-        public ConnectFourGame(IPlayer player1, IPlayer player2)
+class ConnectFourGame
+    {
+        private Board board;
+        private Player redPlayer;
+        private Player yellowPlayer;
+        private List<string> moveRecords;
+
+        public ConnectFourGame(PlayerType redPlayerType, PlayerType yellowPlayerType)
         {
             board = new Board();
-            this.player1 = player1;
-            this.player2 = player2;
-            currentPlayer = player1;
-            lastMove = -1;
+            redPlayer = CreatePlayer(redPlayerType, CellState.Red);
+            yellowPlayer = CreatePlayer(yellowPlayerType, CellState.Yellow);
+            moveRecords = new List<string>();
         }
 
-        public void Start()
+        private Player CreatePlayer(PlayerType playerType, CellState playerColor)
         {
-            Console.WriteLine("Group 1 Connect Four Game");
-            Console.WriteLine("Enter the column number (1-7) to make a move.");
-            Console.WriteLine();
+            switch (playerType)
+            {
+                case PlayerType.Human:
+                    return new Player(playerColor);
+                case PlayerType.AI:
+                    return new AIPlayer(playerColor, 2000); // AI delay: 2 seconds
+                default:
+                    throw new NotImplementedException();
+            }
+        }
+
+        public void StartGame()
+        {
+            Player currentPlayer = redPlayer;
 
             while (true)
             {
-                Console.Clear();
-                board.PrintBoard();
+                board.PrintBoard(moveRecords);
+
+                Console.WriteLine($"Current player: {(currentPlayer == redPlayer ? "Red" : "Yellow")}");
+
                 int move = currentPlayer.GetMove(board);
-                if (board.PlaceDisc(move, currentPlayer.playerType))
+                while (board.IsColumnFull(move))
                 {
-                    if (board.IsGameOver(currentPlayer.playerType))
-                    {
-                        Console.Clear();
-                        board.PrintBoard();
-                        Console.WriteLine($"Player {currentPlayer.playerType} wins!");
-                        break;
-                    }
-
-                    if (IsBoardFull())
-                    {
-                        Console.WriteLine("It's a draw!");
-                        break;
-                    }
-
-                    currentPlayer = (currentPlayer == player1) ? player2 : player1;
+                    Console.WriteLine("Column is full. Choose a different column.");
+                    move = currentPlayer.GetMove(board);
                 }
-                else
+
+                board.PlaceDisc(move, currentPlayer.PlayerColor);
+                moveRecords.Add($"{(currentPlayer == redPlayer ? "Red" : "Yellow")} player chose column {move + 1}.");
+
+                if (board.IsGameOver(currentPlayer.PlayerColor))
                 {
-                    Console.WriteLine("Column is full. Try again.");
-                    Console.Read();
+                    board.PrintBoard(moveRecords);
+                    Console.WriteLine($"{(currentPlayer == redPlayer ? "Red" : "Yellow")} player wins!");
+                    break;
                 }
-            }
 
-        }
-
-        private bool IsBoardFull()
-        {
-            for (int col = 0; col < 7; col++)
-            {
-                if (!board.IsColumnFull(col))
-                    return false;
+                currentPlayer = (currentPlayer == redPlayer) ? yellowPlayer : redPlayer;
             }
-            return true;
         }
     }
 
@@ -470,46 +477,46 @@ namespace Connect4Group1FinalProject
         Console.WriteLine("2. Human vs. AI");
         Console.WriteLine("3. AI vs. AI");
         Console.WriteLine();
-
-        int mode;
-        while (true)
-        {
-            Console.Write("Enter the game mode (1-3): ");
-            if (int.TryParse(Console.ReadLine(), out mode) && mode >= 1 && mode <= 3)
-            {
-                break;
-            }
-            else
-            {
-                Console.WriteLine("Invalid input. Please enter a valid game mode.");
-                Console.WriteLine();
-            }
-        }
-
-        IPlayer player1, player2;
-        switch (mode)
-        {
-            case 1:
-                player1 = new Player(CellState.Xeno);
-                player2 = new Player(CellState.Oni);
-                break;
-            case 2:
-                player1 = new Player(CellState.Xeno);
-                player2 = new AIPlayer(CellState.Oni, 1);
-                break;
-            case 3:
-                player1 = new AIPlayer(CellState.Xeno, 10);
-                player2 = new AIPlayer(CellState.Oni, 10);
-                break;
-            default:
-                Console.WriteLine("Invalid game mode.");
-                return;
-        }
-
-        ConnectFourGame game = new ConnectFourGame(player1, player2);
-        game.Start();
-
             
+            // Vergil: I updated this part so it could work with the class ConnectFourGame
+            
+                        Console.Write("Enter the game mode (1-3): ");
+            int mode;
+            while (true)
+            {
+                if (int.TryParse(Console.ReadLine(), out mode) && mode >= 1 && mode <= 3)
+                {
+                    break;
+                }
+
+                Console.WriteLine("Invalid game mode. Try again.");
+            }
+
+            PlayerType player1Type, player2Type;
+            switch (mode)
+            {
+                case 1:
+                    player1Type = PlayerType.Human;
+                    player2Type = PlayerType.Human;
+                    break;
+                case 2:
+                    player1Type = PlayerType.Human;
+                    player2Type = PlayerType.AI;
+                    break;
+                case 3:
+                    player1Type = PlayerType.AI;
+                    player2Type = PlayerType.AI;
+                    break;
+                default:
+                    throw new InvalidOperationException("Invalid game mode.");
+            }
+
+            ConnectFourGame game = new ConnectFourGame(player1Type, player2Type);
+            game.StartGame();
+
+            Console.WriteLine("Press any key to exit...");
+            Console.ReadKey();
         }
     }
 }
+
