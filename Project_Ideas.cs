@@ -183,6 +183,29 @@ namespace Connect4Game
             Console.WriteLine("3. AI vs AI");
             Console.WriteLine("4. Exit Game");
 
+            int option = GetValidOption();
+
+            Console.WriteLine();
+
+            switch (option)
+            {
+                case 1:
+                    PlayAgainstAI();
+                    break;
+                case 2:
+                    PlayAgainstPlayer();
+                    break;
+                case 3:
+                    AIvsAI();
+                    break;
+                case 4:
+                    ExitGame();
+                    break;
+            }
+        }
+
+        private static int GetValidOption()
+        {
             bool validOption = false;
             int option = 0;
 
@@ -208,88 +231,26 @@ namespace Connect4Game
                 }
             }
 
-            Console.WriteLine();
-
-            switch (option)
-            {
-                case 1:
-                    PlayAgainstAI();
-                    break;
-                case 2:
-                    PlayAgainstPlayer();
-                    break;
-                case 3:
-                    AIvsAI();
-                    break;
-                case 4:
-                    ExitGame();
-                    break;
-            }
+            return option;
         }
-
+        // method to ask player's name 
+        private static string GetPlayerName(string playerLabel)
+        {
+            Console.Write($"{playerLabel}'s name: ");
+            return Console.ReadLine();
+        }
         private static void PlayAgainstAI()
         {
             Console.WriteLine("Player vs AI");
             Console.WriteLine("--------------------------------");
 
+            string playerName = GetPlayerName("Player");
             GameBoard board = new GameBoard();
-            Player player1 = new Player("Player 1", 'X');
+            Player player1 = new Player(playerName, 'X');
             AI ai = new AI('O');
 
-            // Game loop
-            while (true)
-            {
-                board.DrawBoard();
 
-                // Player's turn
-                int playerMove = player1.GetMove();
-                while (!board.IsValidMove(playerMove))
-                {
-                    Console.WriteLine("Invalid move. Please try again.");
-                    playerMove = player1.GetMove();
-                }
-                board.MakeMove(playerMove, player1.Symbol);
-
-                if (board.CheckWinCondition(player1.Symbol))
-                {
-                    board.DrawBoard();
-                    Console.WriteLine("Player 1 wins!");
-                    break;
-                }
-
-                if (board.IsBoardFull())
-                {
-                    board.DrawBoard();
-                    Console.WriteLine("It's a draw!");
-                    break;
-                }
-
-                // AI's turn
-                int aiMove = ai.GetMove();
-                while (!board.IsValidMove(aiMove))
-                {
-                    aiMove = ai.GetMove();
-                }
-                board.MakeMove(aiMove, ai.Symbol);
-
-                if (board.CheckWinCondition(ai.Symbol))
-                {
-                    board.DrawBoard();
-                    Console.WriteLine("AI wins!");
-                    break;
-                }
-
-                if (board.IsBoardFull())
-                {
-                    board.DrawBoard();
-                    Console.WriteLine("It's a draw!");
-                    break;
-                }
-            }
-
-            Console.WriteLine("Game over!");
-            Console.WriteLine();
-            ShowMenu();
+            PlayGame(board, player1, ai);
         }
 
         private static void PlayAgainstPlayer()
@@ -297,67 +258,15 @@ namespace Connect4Game
             Console.WriteLine("Player 1 vs Player 2");
             Console.WriteLine("--------------------------------");
 
+            string player1Name = GetPlayerName("Player 1");
+            string player2Name = GetPlayerName("Player 2");
+
             GameBoard board = new GameBoard();
-            Player player1 = new Player("Player 1", 'X');
-            Player player2 = new Player("Player 2", 'O');
+            Player player1 = new Player(player1Name, 'X');
+            Player player2 = new Player(player2Name, 'O');
 
-            // Game loop
-            while (true)
-            {
-                board.DrawBoard();
-
-                // Player 1's turn
-                int player1Move = player1.GetMove();
-                while (!board.IsValidMove(player1Move))
-                {
-                    Console.WriteLine("Invalid move. Please try again.");
-                    player1Move = player1.GetMove();
-                }
-                board.MakeMove(player1Move, player1.Symbol);
-
-                board.DrawBoard(); // Show the updated board
-
-                if (board.CheckWinCondition(player1.Symbol))
-                {
-                    Console.WriteLine("Player 1 wins!");
-                    break;
-                }
-
-                if (board.IsBoardFull())
-                {
-                    Console.WriteLine("It's a draw!");
-                    break;
-                }
-
-                // Player 2's turn
-                int player2Move = player2.GetMove();
-                while (!board.IsValidMove(player2Move))
-                {
-                    Console.WriteLine("Invalid move. Please try again.");
-                    player2Move = player2.GetMove();
-                }
-                board.MakeMove(player2Move, player2.Symbol);
-
-                board.DrawBoard(); // Show the updated board
-
-                if (board.CheckWinCondition(player2.Symbol))
-                {
-                    Console.WriteLine("Player 2 wins!");
-                    break;
-                }
-
-                if (board.IsBoardFull())
-                {
-                    Console.WriteLine("It's a draw!");
-                    break;
-                }
-            }
-
-            Console.WriteLine("GAME OVER!");
-            Console.WriteLine();
-            ShowMenu();
+            PlayGame(board, player1, player2);
         }
-
 
         private static void AIvsAI()
         {
@@ -368,52 +277,46 @@ namespace Connect4Game
             AI ai1 = new AI('X');
             AI ai2 = new AI('O');
 
-            // Game loop
+            PlayGame(board, ai1, ai2);
+        }
+
+        private static void PlayGame(GameBoard board, Player player1, Player player2)
+        {
             while (true)
             {
                 board.DrawBoard();
 
-                // AI 1's turn
-                int ai1Move = ai1.GetMove();
-                while (!board.IsValidMove(ai1Move))
-                {
-                    ai1Move = ai1.GetMove();
-                }
-                board.MakeMove(ai1Move, ai1.Symbol);
+                int player1Move = GetPlayerMove(player1, board);
+                board.MakeMove(player1Move, player1.Symbol);
 
-                if (board.CheckWinCondition(ai1.Symbol))
+                if (board.CheckWinCondition(player1.Symbol))
                 {
                     board.DrawBoard();
-                    Console.WriteLine("AI 1 wins!");
+                    Console.WriteLine("{0} wins!", player1.Name);
                     break;
                 }
 
                 if (board.IsBoardFull())
                 {
                     board.DrawBoard();
-                    Console.WriteLine("DRAW!");
+                    Console.WriteLine("It's a draw!");
                     break;
                 }
 
-                // AI 2's turn
-                int ai2Move = ai2.GetMove();
-                while (!board.IsValidMove(ai2Move))
-                {
-                    ai2Move = ai2.GetMove();
-                }
-                board.MakeMove(ai2Move, ai2.Symbol);
+                int player2Move = GetPlayerMove(player2, board);
+                board.MakeMove(player2Move, player2.Symbol);
 
-                if (board.CheckWinCondition(ai2.Symbol))
+                if (board.CheckWinCondition(player2.Symbol))
                 {
                     board.DrawBoard();
-                    Console.WriteLine("AI WINS!");
+                    Console.WriteLine("{0} wins!", player2.Name);
                     break;
                 }
 
                 if (board.IsBoardFull())
                 {
                     board.DrawBoard();
-                    Console.WriteLine("DRAW!");
+                    Console.WriteLine("It's a draw!");
                     break;
                 }
             }
@@ -421,6 +324,17 @@ namespace Connect4Game
             Console.WriteLine("GAME OVER!");
             Console.WriteLine();
             ShowMenu();
+        }
+
+        private static int GetPlayerMove(Player player, GameBoard board)
+        {
+            int playerMove = player.GetMove();
+            while (!board.IsValidMove(playerMove))
+            {
+                Console.WriteLine("Invalid move. Please try again.");
+                playerMove = player.GetMove();
+            }
+            return playerMove;
         }
 
         private static void ExitGame()
