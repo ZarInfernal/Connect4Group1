@@ -16,9 +16,8 @@ namespace Connect4Group1FinalProject
     enum CellState
     {
         Empty,
-        // Vergil: I updated Xeno and Oni back to Red and Yellow to make it clearer
-        Red,
-        Yellow
+        Xeno,
+        Oni
     }
 
     // Interface for the players
@@ -156,7 +155,7 @@ namespace Connect4Group1FinalProject
             return true;
         }
 
-        public void PrintBoard()
+        public void PrintBoard(List<string> moveRecords)
         {
             for (int row = 0; row < Rows; row++)
             {
@@ -216,9 +215,9 @@ namespace Connect4Group1FinalProject
 
         public CellState playerType { get; }
 
-        public AIPlayer(CellState playerColor, int difficulty)
+        public AIPlayer(CellState playerType, int difficulty)
         {
-            playerType = playerColor;
+            this.playerType = playerType;
             this.difficulty = difficulty;
         }
 
@@ -405,43 +404,31 @@ namespace Connect4Group1FinalProject
     // Class that will manage the game
 // Vergil: I updated the class ConnectFourGame to have the records of two players
 
-class ConnectFourGame
+    class ConnectFourGame
     {
-        private Board board;
-        private Player redPlayer;
-        private Player yellowPlayer;
+        private readonly Board board;
+        private readonly IPlayer player1;
+        private readonly IPlayer player2;
+        private IPlayer currentPlayer;
         private List<string> moveRecords;
 
-        public ConnectFourGame(PlayerType redPlayerType, PlayerType yellowPlayerType)
+        public ConnectFourGame(IPlayer player1, IPlayer player2)
         {
             board = new Board();
-            redPlayer = CreatePlayer(redPlayerType, CellState.Red);
-            yellowPlayer = CreatePlayer(yellowPlayerType, CellState.Yellow);
+            this.player1 = player1;
+            this.player2 = player2;
             moveRecords = new List<string>();
-        }
-
-        private Player CreatePlayer(PlayerType playerType, CellState playerColor)
-        {
-            switch (playerType)
-            {
-                case PlayerType.Human:
-                    return new Player(playerColor);
-                case PlayerType.AI:
-                    return new AIPlayer(playerColor, 2000); // AI delay: 2 seconds
-                default:
-                    throw new NotImplementedException();
-            }
         }
 
         public void StartGame()
         {
-            Player currentPlayer = redPlayer;
+            currentPlayer = player1;
 
             while (true)
             {
                 board.PrintBoard(moveRecords);
 
-                Console.WriteLine($"Current player: {(currentPlayer == redPlayer ? "Red" : "Yellow")}");
+                Console.WriteLine($"Current player: {(currentPlayer == player1 ? "Xeno" : "Oni")}");
 
                 int move = currentPlayer.GetMove(board);
                 while (board.IsColumnFull(move))
@@ -450,17 +437,17 @@ class ConnectFourGame
                     move = currentPlayer.GetMove(board);
                 }
 
-                board.PlaceDisc(move, currentPlayer.PlayerColor);
-                moveRecords.Add($"{(currentPlayer == redPlayer ? "Red" : "Yellow")} player chose column {move + 1}.");
+                board.PlaceDisc(move, currentPlayer.playerType);
+                moveRecords.Add($"{(currentPlayer == player1 ? "Xeno" : "Oni")} player chose column {move + 1}.");
 
-                if (board.IsGameOver(currentPlayer.PlayerColor))
+                if (board.IsGameOver(currentPlayer.playerType))
                 {
                     board.PrintBoard(moveRecords);
-                    Console.WriteLine($"{(currentPlayer == redPlayer ? "Red" : "Yellow")} player wins!");
+                    Console.WriteLine($"{(currentPlayer == player1 ? "Xeno" : "Oni")} player wins!");
                     break;
                 }
 
-                currentPlayer = (currentPlayer == redPlayer) ? yellowPlayer : redPlayer;
+                currentPlayer = (currentPlayer == player1) ? player2 : player1;
             }
         }
     }
@@ -480,7 +467,7 @@ class ConnectFourGame
             
             // Vergil: I updated this part so it could work with the class ConnectFourGame
             
-                        Console.Write("Enter the game mode (1-3): ");
+            Console.Write("Enter the game mode (1-3): ");
             int mode;
             while (true)
             {
@@ -492,26 +479,26 @@ class ConnectFourGame
                 Console.WriteLine("Invalid game mode. Try again.");
             }
 
-            PlayerType player1Type, player2Type;
+            IPlayer player1, player2;
             switch (mode)
             {
                 case 1:
-                    player1Type = PlayerType.Human;
-                    player2Type = PlayerType.Human;
+                    player1 = new Player(CellState.Xeno);
+                    player2 = new Player(CellState.Oni);
                     break;
                 case 2:
-                    player1Type = PlayerType.Human;
-                    player2Type = PlayerType.AI;
+                    player1 = new Player(CellState.Xeno);
+                    player2 = new AIPlayer(CellState.Oni, 1);
                     break;
                 case 3:
-                    player1Type = PlayerType.AI;
-                    player2Type = PlayerType.AI;
+                    player1 = new AIPlayer(CellState.Xeno, 1);
+                    player2 = new AIPlayer(CellState.Oni, 1);
                     break;
                 default:
                     throw new InvalidOperationException("Invalid game mode.");
             }
 
-            ConnectFourGame game = new ConnectFourGame(player1Type, player2Type);
+            ConnectFourGame game = new ConnectFourGame(player1, player2);
             game.StartGame();
 
             Console.WriteLine("Press any key to exit...");
