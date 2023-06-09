@@ -69,9 +69,9 @@ The Connect Four game supports the following game modes:
 1. Empty (#): Represents an empty cell.
 2. Xeno (X): Represents a disc placed by the Xeno player.
 3. Oni (O): Represents a disc placed by the Oni player.
-The board is displayed at the start of each player's turn, showing the current state of the game.
+- The board is displayed at the start of each player's turn, showing the current state of the game.
 
-Upon starting the program, the user is prompted to select a game mode. The game then begins with the selected mode.
+-- Upon starting the program, the user is prompted to select a game mode. The game then begins with the selected mode.
 
 ## Running the Program
 To run the Connect Four game program, follow these steps:
