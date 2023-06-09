@@ -1,0 +1,397 @@
+using System;
+using System.Collections.Generic;
+using System.Threading;
+
+namespace FinalProjectConnect4
+{
+    enum PlayerType
+    {
+        Human,
+        AI
+    }
+
+    enum CellState
+    {
+        Empty,
+        Red,
+        Yellow
+    }
+
+    class Board
+    {
+        public const int Rows = 6;
+        public const int Cols = 7;
+        private CellState[,] cells;
+
+        public Board()
+        {
+            cells = new CellState[Rows, Cols];
+            InitializeBoard();
+        }
+
+        private void InitializeBoard()
+        {
+            for (int row = 0; row < Rows; row++)
+            {
+                for (int col = 0; col < Cols; col++)
+                {
+                    cells[row, col] = CellState.Empty;
+                }
+            }
+        }
+
+        public bool IsColumnFull(int col)
+        {
+            return cells[0, col] != CellState.Empty;
+        }
+
+        public bool PlaceDisc(int col, CellState player)
+        {
+            for (int row = Rows - 1; row >= 0; row--)
+            {
+                if (cells[row, col] == CellState.Empty)
+                {
+                    cells[row, col] = player;
+                    return true;
+                }
+            }
+
+            return false; // Column is full
+        }
+
+        public void RemoveDisc(int col)
+        {
+            for (int row = 0; row < Rows; row++)
+            {
+                if (cells[row, col] != CellState.Empty)
+                {
+                    cells[row, col] = CellState.Empty;
+                    break;
+                }
+            }
+        }
+
+        public bool IsGameOver(CellState player)
+        {
+            // Check for a winning condition
+            // Check rows
+            for (int row = 0; row < Rows; row++)
+            {
+                for (int col = 0; col <= Cols - 4; col++)
+                {
+                    if (cells[row, col] == player &&
+                        cells[row, col + 1] == player &&
+                        cells[row, col + 2] == player &&
+                        cells[row, col + 3] == player)
+                    {
+                        return true; // Winning condition found
+                    }
+                }
+            }
+
+            // Check columns
+            for (int row = 0; row <= Rows - 4; row++)
+            {
+                for (int col = 0; col < Cols; col++)
+                {
+                    if (cells[row, col] == player &&
+                        cells[row + 1, col] == player &&
+                        cells[row + 2, col] == player &&
+                        cells[row + 3, col] == player)
+                    {
+                        return true; // Winning condition found
+                    }
+                }
+            }
+
+            // Check diagonals (positive slope)
+            for (int row = 0; row <= Rows - 4; row++)
+            {
+                for (int col = 0; col <= Cols - 4; col++)
+                {
+                    if (cells[row, col] == player &&
+                        cells[row + 1, col + 1] == player &&
+                        cells[row + 2, col + 2] == player &&
+                        cells[row + 3, col + 3] == player)
+                    {
+                        return true; // Winning condition found
+                    }
+                }
+            }
+
+            // Check diagonals (negative slope)
+            for (int row = 0; row <= Rows - 4; row++)
+            {
+                for (int col = 3; col < Cols; col++)
+                {
+                    if (cells[row, col] == player &&
+                        cells[row + 1, col - 1] == player &&
+                        cells[row + 2, col - 2] == player &&
+                        cells[row + 3, col - 3] == player)
+                    {
+                        return true; // Winning condition found
+                    }
+                }
+            }
+
+            return false; // Game is not over
+        }
+
+        public void PrintBoard(List<string> moveRecords)
+        {
+            for (int row = 0; row < Rows; row++)
+            {
+                for (int col = 0; col < Cols; col++)
+                {
+                    switch (cells[row, col])
+                    {
+                        case CellState.Empty:
+                            Console.Write("-");
+                            break;
+                        case CellState.Red:
+                            Console.Write("R");
+                            break;
+                        case CellState.Yellow:
+                            Console.Write("Y");
+                            break;
+                        default:
+                            throw new NotImplementedException();
+                    }
+                }
+
+                Console.WriteLine();
+            }
+
+            Console.WriteLine();
+
+            Console.WriteLine("Player Moves:");
+            Console.WriteLine("=============");
+            foreach (string move in moveRecords)
+            {
+                Console.WriteLine(move);
+            }
+
+            Console.WriteLine();
+        }
+    }
+
+    class Player
+    {
+        public CellState PlayerColor { get; }
+
+        public Player(CellState playerColor)
+        {
+            PlayerColor = playerColor;
+        }
+
+        public virtual int GetMove(Board board)
+        {
+            Console.Write("Enter the column number (1-7): ");
+            int move = int.Parse(Console.ReadLine());
+            return move - 1; // Convert to zero-based index
+        }
+    }
+
+    class AIPlayer : Player
+    {
+        private readonly Random random;
+        private readonly int delay;
+
+        public AIPlayer(CellState playerColor, int delay) : base(playerColor)
+        {
+            random = new Random();
+            this.delay = delay;
+        }
+
+        public override int GetMove(Board board)
+        {
+            Console.WriteLine("AI is thinking...");
+            Thread.Sleep(delay);
+            int move;
+
+            // Check for a winning move
+            move = GetWinningMove(board);
+            if (move != -1)
+                return move;
+
+            // Check for a blocking move
+            move = GetBlockingMove(board);
+            if (move != -1)
+                return move;
+
+            // Choose a random valid move
+            return GetRandomMove(board);
+        }
+
+        private int GetWinningMove(Board board)
+        {
+            for (int col = 0; col < Board.Cols; col++)
+            {
+                if (!board.IsColumnFull(col))
+                {
+                    // Simulate placing the AI's disc in the column
+                    board.PlaceDisc(col, PlayerColor);
+                    if (board.IsGameOver(PlayerColor))
+                    {
+                        // Undo the move and return the winning column
+                        board.RemoveDisc(col);
+                        return col;
+                    }
+
+                    board.RemoveDisc(col);
+                }
+            }
+
+            return -1; // No winning move found
+        }
+
+        private int GetBlockingMove(Board board)
+        {
+            CellState opponentColor = PlayerColor == CellState.Red ? CellState.Yellow : CellState.Red;
+
+            for (int col = 0; col < Board.Cols; col++)
+            {
+                if (!board.IsColumnFull(col))
+                {
+                    // Simulate placing the opponent's disc in the column
+                    board.PlaceDisc(col, opponentColor);
+                    if (board.IsGameOver(opponentColor))
+                    {
+                        // Undo the move and return the blocking column
+                        board.RemoveDisc(col);
+                        return col;
+                    }
+
+                    board.RemoveDisc(col);
+                }
+            }
+
+            return -1; // No blocking move found
+        }
+
+        private int GetRandomMove(Board board)
+        {
+            List<int> validMoves = new List<int>();
+            for (int col = 0; col < Board.Cols; col++)
+            {
+                if (!board.IsColumnFull(col))
+                {
+                    validMoves.Add(col);
+                }
+            }
+
+            return validMoves[random.Next(validMoves.Count)];
+        }
+    }
+
+    class ConnectFourGame
+    {
+        private Board board;
+        private Player redPlayer;
+        private Player yellowPlayer;
+        private List<string> moveRecords;
+
+        public ConnectFourGame(PlayerType redPlayerType, PlayerType yellowPlayerType)
+        {
+            board = new Board();
+            redPlayer = CreatePlayer(redPlayerType, CellState.Red);
+            yellowPlayer = CreatePlayer(yellowPlayerType, CellState.Yellow);
+            moveRecords = new List<string>();
+        }
+
+        private Player CreatePlayer(PlayerType playerType, CellState playerColor)
+        {
+            switch (playerType)
+            {
+                case PlayerType.Human:
+                    return new Player(playerColor);
+                case PlayerType.AI:
+                    return new AIPlayer(playerColor, 2000); // AI delay: 2 seconds
+                default:
+                    throw new NotImplementedException();
+            }
+        }
+
+        public void StartGame()
+        {
+            Player currentPlayer = redPlayer;
+
+            while (true)
+            {
+                board.PrintBoard(moveRecords);
+
+                Console.WriteLine($"Current player: {(currentPlayer == redPlayer ? "Red" : "Yellow")}");
+
+                int move = currentPlayer.GetMove(board);
+                while (board.IsColumnFull(move))
+                {
+                    Console.WriteLine("Column is full. Choose a different column.");
+                    move = currentPlayer.GetMove(board);
+                }
+
+                board.PlaceDisc(move, currentPlayer.PlayerColor);
+                moveRecords.Add($"{(currentPlayer == redPlayer ? "Red" : "Yellow")} player chose column {move + 1}.");
+
+                if (board.IsGameOver(currentPlayer.PlayerColor))
+                {
+                    board.PrintBoard(moveRecords);
+                    Console.WriteLine($"{(currentPlayer == redPlayer ? "Red" : "Yellow")} player wins!");
+                    break;
+                }
+
+                currentPlayer = (currentPlayer == redPlayer) ? yellowPlayer : redPlayer;
+            }
+        }
+    }
+
+    class Program
+    {
+        static void Main(string[] args)
+        {
+            Console.WriteLine("Connect Four Game");
+            Console.WriteLine("=================");
+            Console.WriteLine("1. Human vs. Human");
+            Console.WriteLine("2. Human vs. AI");
+            Console.WriteLine("3. AI vs. AI");
+            Console.WriteLine();
+
+            Console.Write("Enter the game mode (1-3): ");
+            int mode;
+            while (true)
+            {
+                if (int.TryParse(Console.ReadLine(), out mode) && mode >= 1 && mode <= 3)
+                {
+                    break;
+                }
+
+                Console.WriteLine("Invalid game mode. Try again.");
+            }
+
+            PlayerType player1Type, player2Type;
+            switch (mode)
+            {
+                case 1:
+                    player1Type = PlayerType.Human;
+                    player2Type = PlayerType.Human;
+                    break;
+                case 2:
+                    player1Type = PlayerType.Human;
+                    player2Type = PlayerType.AI;
+                    break;
+                case 3:
+                    player1Type = PlayerType.AI;
+                    player2Type = PlayerType.AI;
+                    break;
+                default:
+                    throw new InvalidOperationException("Invalid game mode.");
+            }
+
+            ConnectFourGame game = new ConnectFourGame(player1Type, player2Type);
+            game.StartGame();
+
+            Console.WriteLine("Press any key to exit...");
+            Console.ReadKey();
+        }
+    }
+}
+
