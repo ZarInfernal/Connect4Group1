@@ -182,9 +182,10 @@ namespace Connect4Group1FinalProject
 
             Console.WriteLine("Player Moves:");
             Console.WriteLine("=============");
-            foreach (string move in moveRecords)
+            int start = Math.Max(moveRecords.Count - 2, 0);
+            for (int i = start; i < moveRecords.Count; i++)
             {
-                Console.WriteLine(move);
+                Console.WriteLine(moveRecords[i]);
             }
 
             Console.WriteLine();
@@ -426,6 +427,7 @@ namespace Connect4Group1FinalProject
 
             while (true)
             {
+                Console.Clear();
                 board.PrintBoard(moveRecords);
 
                 Console.WriteLine($"Current player: {(currentPlayer == player1 ? "Xeno" : "Oni")}");
@@ -442,6 +444,7 @@ namespace Connect4Group1FinalProject
 
                 if (board.IsGameOver(currentPlayer.playerType))
                 {
+                    Console.Clear();
                     board.PrintBoard(moveRecords);
                     Console.WriteLine($"{(currentPlayer == player1 ? "Xeno" : "Oni")} player wins!");
                     break;
