@@ -56,11 +56,22 @@ The Connect Four game is implemented using the following classes:
 ## Game Modes
 The Connect Four game supports the following game modes:
 
-1. **Human vs. Human**: Both players are human players, taking turns to play on the same machine.
-2. **Human vs. AI**: One player is a human player, and the other player is an AI player.
-3. **AI vs. AI**: Both players are AI players, and the game is fully automated.
+1. **Human vs. Human**: Both players are human players, taking turns to play on the same machine. They take turns entering their moves by specifying the column number (1-7) where they want to drop their disc.
+2. **Human vs. AI**: One player is a human player, and the other player is an AI player. The human player enters their moves as in the Human vs. Human mode, while the AI opponent uses the minimax algorithm to make its moves.
+3. **AI vs. AI**: Both players are AI players, and the game is fully automated. Both AI players use the minimax algorithm with different difficulty levels to make their moves.
 
-Upon starting the program, the user is prompted to select a game mode. The game then begins with the selected mode.
+## Player Types
+1. Human: A human player who interacts with the game by entering moves through the command line.
+2. AI: An AI player that uses the minimax algorithm to make intelligent moves.
+
+## Game Board
+- The game board is represented as a grid of cells. Each cell can be in one of three states:
+1. Empty (#): Represents an empty cell.
+2. Xeno (X): Represents a disc placed by the Xeno player.
+3. Oni (O): Represents a disc placed by the Oni player.
+- The board is displayed at the start of each player's turn, showing the current state of the game.
+
+-- Upon starting the program, the user is prompted to select a game mode. The game then begins with the selected mode.
 
 ## Running the Program
 To run the Connect Four game program, follow these steps:
