@@ -478,59 +478,83 @@ namespace Connect4Group1FinalProject
     {
         static void Main(string[] args)
         {
-            try
+            bool exitGame = false;
+
+            while (!exitGame)
             {
-                Console.WriteLine("Connect Four Game");
-                Console.WriteLine("=================");
-                Console.WriteLine("Game Modes:");
-                Console.WriteLine("1. Human vs. Human");
-                Console.WriteLine("2. Human vs. AI");
-                Console.WriteLine("3. AI vs. AI");
-                Console.WriteLine();
-
-                // Vergil: I updated this part so it could work with the class ConnectFourGame
-
-                Console.Write("Enter the game mode (1-3): ");
-                int mode;
-                while (true)
+                try
                 {
-                    if (int.TryParse(Console.ReadLine(), out mode) && mode >= 1 && mode <= 3)
+                    Console.WriteLine("Connect Four Game");
+                    Console.WriteLine("=================");
+                    Console.WriteLine("Game Modes:");
+                    Console.WriteLine("1. Human vs. Human");
+                    Console.WriteLine("2. Human vs. AI");
+                    Console.WriteLine("3. AI vs. AI");
+                    Console.WriteLine("4. Exit Game");
+                    Console.WriteLine();
+
+
+
+                    Console.Write("Enter the game mode (1-4): ");
+                    int mode;
+                    while (true)
                     {
+                        if (int.TryParse(Console.ReadLine(), out mode) && mode >= 1 && mode <= 4)
+                        {
+                            break;
+                        }
+
+
+
+                        Console.WriteLine("Invalid game mode. Try again.");
+                    }
+
+                    if (mode == 4)
+                    {
+                        Console.WriteLine("Exiting the game...");
+                        exitGame = true;
                         break;
                     }
 
-                    Console.WriteLine("Invalid game mode. Try again.");
+                    IPlayer player1, player2;
+                    switch (mode)
+                    {
+                        case 1:
+                            player1 = new Player(CellState.Xeno);
+                            player2 = new Player(CellState.Oni);
+                            break;
+                        case 2:
+                            player1 = new Player(CellState.Xeno);
+                            player2 = new AIPlayer(CellState.Oni, GetAIDifficulty("Oni"));
+                            break;
+                        case 3:
+                            player1 = new AIPlayer(CellState.Xeno, GetAIDifficulty("Xeno"));
+                            player2 = new AIPlayer(CellState.Oni, GetAIDifficulty("Oni"));
+                            break;
+                        default:
+                            throw new InvalidOperationException("Invalid game mode.");
+                    }
+
+                    ConnectFourGame game = new ConnectFourGame(player1, player2);
+                    game.StartGame();
                 }
 
-                IPlayer player1, player2;
-                switch (mode)
+                catch (FormatException ex)
                 {
-                    case 1:
-                        player1 = new Player(CellState.Xeno);
-                        player2 = new Player(CellState.Oni);
-                        break;
-                    case 2:
-                        player1 = new Player(CellState.Xeno);
-                        player2 = new AIPlayer(CellState.Oni, GetAIDifficulty("Oni"));
-                        break;
-                    case 3:
-                        player1 = new AIPlayer(CellState.Xeno, GetAIDifficulty("Xeno"));
-                        player2 = new AIPlayer(CellState.Oni, GetAIDifficulty("Oni"));
-                        break;
-                    default:
-                        throw new InvalidOperationException("Invalid game mode.");
+                    Console.WriteLine("An error occurred: " + ex.Message);
                 }
 
-                ConnectFourGame game = new ConnectFourGame(player1, player2);
-                game.StartGame();
-            }
-            catch (FormatException ex)
-            {
-                Console.WriteLine("An error occurred: " + ex.Message);
-            }
-            finally
-            {
-
+                Console.WriteLine("\nPress R to return to the main menu or press any other key to exit the game...");
+                var key = Console.ReadKey();
+                if (key.KeyChar == 'r' || key.KeyChar == 'R')
+                {
+                    Console.Clear(); // Clear the console screen
+                }
+                else
+                {
+                    exitGame = true;
+                    Console.WriteLine("Exiting the game...");
+                }
             }
         }
         static int GetAIDifficulty(string aiPlayerType)
