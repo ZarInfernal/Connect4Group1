@@ -432,25 +432,40 @@ namespace Connect4Group1FinalProject
 
                 Console.WriteLine($"Current player: {(currentPlayer == player1 ? "Xeno" : "Oni")}");
 
-                int move = currentPlayer.GetMove(board);
-                while (board.IsColumnFull(move))
+                try
                 {
-                    Console.WriteLine("Column is full. Choose a different column.");
-                    move = currentPlayer.GetMove(board);
+                    int move = currentPlayer.GetMove(board);
+                    while (board.IsColumnFull(move))
+                    {
+                        Console.WriteLine("Column is full. Choose a different column.");
+                        move = currentPlayer.GetMove(board);
+                    }
+
+                    board.PlaceDisc(move, currentPlayer.playerType);
+                    moveRecords.Add($"{(currentPlayer == player1 ? "Xeno" : "Oni")} player chose column {move + 1}.");
+
+                    if (board.IsGameOver(currentPlayer.playerType))
+                    {
+                        Console.Clear();
+                        board.PrintBoard(moveRecords);
+                        Console.WriteLine($"{(currentPlayer == player1 ? "Xeno" : "Oni")} player wins!");
+                        break;
+                    }
+
+                    currentPlayer = (currentPlayer == player1) ? player2 : player1;
                 }
-
-                board.PlaceDisc(move, currentPlayer.playerType);
-                moveRecords.Add($"{(currentPlayer == player1 ? "Xeno" : "Oni")} player chose column {move + 1}.");
-
-                if (board.IsGameOver(currentPlayer.playerType))
+                catch (FormatException e)
                 {
-                    Console.Clear();
-                    board.PrintBoard(moveRecords);
-                    Console.WriteLine($"{(currentPlayer == player1 ? "Xeno" : "Oni")} player wins!");
-                    break;
+                    Console.WriteLine("An error occurred: " + e.Message);
+                    Console.WriteLine("Press any key to continue...");
+                    Console.ReadKey();
                 }
-
-                currentPlayer = (currentPlayer == player1) ? player2 : player1;
+                catch (IndexOutOfRangeException e)
+                {
+                    Console.WriteLine("An error occured: " + e.Message);
+                    Console.WriteLine("Press any key to continue...");
+                    Console.ReadKey();
+                }
             }
         }
     }
@@ -460,52 +475,61 @@ namespace Connect4Group1FinalProject
     {
         static void Main(string[] args)
         {
-        Console.WriteLine("Connect Four Game");
-        Console.WriteLine("=================");
-        Console.WriteLine("Game Modes:");
-        Console.WriteLine("1. Human vs. Human");
-        Console.WriteLine("2. Human vs. AI");
-        Console.WriteLine("3. AI vs. AI");
-        Console.WriteLine();
-            
-            // Vergil: I updated this part so it could work with the class ConnectFourGame
-            
-            Console.Write("Enter the game mode (1-3): ");
-            int mode;
-            while (true)
+            try
             {
-                if (int.TryParse(Console.ReadLine(), out mode) && mode >= 1 && mode <= 3)
+                Console.WriteLine("Connect Four Game");
+                Console.WriteLine("=================");
+                Console.WriteLine("Game Modes:");
+                Console.WriteLine("1. Human vs. Human");
+                Console.WriteLine("2. Human vs. AI");
+                Console.WriteLine("3. AI vs. AI");
+                Console.WriteLine();
+
+                // Vergil: I updated this part so it could work with the class ConnectFourGame
+
+                Console.Write("Enter the game mode (1-3): ");
+                int mode;
+                while (true)
                 {
-                    break;
+                    if (int.TryParse(Console.ReadLine(), out mode) && mode >= 1 && mode <= 3)
+                    {
+                        break;
+                    }
+
+                    Console.WriteLine("Invalid game mode. Try again.");
                 }
 
-                Console.WriteLine("Invalid game mode. Try again.");
-            }
+                IPlayer player1, player2;
+                switch (mode)
+                {
+                    case 1:
+                        player1 = new Player(CellState.Xeno);
+                        player2 = new Player(CellState.Oni);
+                        break;
+                    case 2:
+                        player1 = new Player(CellState.Xeno);
+                        player2 = new AIPlayer(CellState.Oni, 1);
+                        break;
+                    case 3:
+                        player1 = new AIPlayer(CellState.Xeno, 1);
+                        player2 = new AIPlayer(CellState.Oni, 1);
+                        break;
+                    default:
+                        throw new InvalidOperationException("Invalid game mode.");
+                }
 
-            IPlayer player1, player2;
-            switch (mode)
+                ConnectFourGame game = new ConnectFourGame(player1, player2);
+                game.StartGame();
+            }
+            catch (FormatException ex)
             {
-                case 1:
-                    player1 = new Player(CellState.Xeno);
-                    player2 = new Player(CellState.Oni);
-                    break;
-                case 2:
-                    player1 = new Player(CellState.Xeno);
-                    player2 = new AIPlayer(CellState.Oni, 1);
-                    break;
-                case 3:
-                    player1 = new AIPlayer(CellState.Xeno, 1);
-                    player2 = new AIPlayer(CellState.Oni, 1);
-                    break;
-                default:
-                    throw new InvalidOperationException("Invalid game mode.");
+                Console.WriteLine("An error occurred: " + ex.Message);
             }
-
-            ConnectFourGame game = new ConnectFourGame(player1, player2);
-            game.StartGame();
-
-            Console.WriteLine("Press any key to exit...");
-            Console.ReadKey();
+            finally
+            {
+                Console.WriteLine("Press any key to exit...");
+                Console.ReadKey();
+            }
         }
     }
 }
