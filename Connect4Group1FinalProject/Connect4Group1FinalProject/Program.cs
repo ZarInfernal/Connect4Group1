@@ -159,25 +159,28 @@ namespace Connect4Group1FinalProject
         {
             for (int row = 0; row < Rows; row++)
             {
+                Console.Write("| ");
                 for (int col = 0; col < Cols; col++)
                 {
                     switch(cells[row, col])
                     {
                         case CellState.Empty:
-                            Console.Write("#");
+                            Console.Write("# ");
                             break;
                         case CellState.Xeno:
-                            Console.Write("X");
+                            Console.Write("X ");
                             break;
                         case CellState.Oni:
-                            Console.Write("O");
+                            Console.Write("O ");
                             break;
                         default:
                             throw new NotImplementedException();
                     }
                 }
+                Console.Write("|");
                 Console.WriteLine();
             }
+            Console.WriteLine("--1-2-3-4-5-6-7--");
             Console.WriteLine();
 
             Console.WriteLine("Player Moves:");
@@ -188,7 +191,7 @@ namespace Connect4Group1FinalProject
                 Console.WriteLine(moveRecords[i]);
             }
 
-            Console.WriteLine();
+            Console.WriteLine("\n");
         }
 
     }
@@ -527,8 +530,7 @@ namespace Connect4Group1FinalProject
             }
             finally
             {
-                Console.WriteLine("Press any key to exit...");
-                Console.ReadKey();
+
             }
         }
         static int GetAIDifficulty(string aiPlayerType)
