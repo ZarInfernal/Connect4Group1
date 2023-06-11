@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using System.Threading;
 using System.Threading.Tasks;
 
 namespace Connect4Group1FinalProject
@@ -415,6 +416,7 @@ namespace Connect4Group1FinalProject
         private readonly IPlayer player2;
         private IPlayer currentPlayer;
         private List<string> moveRecords;
+        private CancellationTokenSource cancellationTokenSource;
 
         public ConnectFourGame(IPlayer player1, IPlayer player2)
         {
@@ -422,31 +424,21 @@ namespace Connect4Group1FinalProject
             this.player1 = player1;
             this.player2 = player2;
             moveRecords = new List<string>();
+            cancellationTokenSource = new CancellationTokenSource();
         }
 
         public void StartGame()
         {
             currentPlayer = player1;
 
-            while (true)
+            Task.Run(() => PlayerInputLoop());
+
+            while (!cancellationTokenSource.Token.IsCancellationRequested)
             {
                 Console.Clear();
                 board.PrintBoard(moveRecords);
 
                 Console.WriteLine($"Current player: {(currentPlayer == player1 ? "Xeno" : "Oni")}");
-
-                ConsoleKeyInfo key;
-
-                do
-                {
-                    key = Console.ReadKey(true);
-                } while (key.Key != ConsoleKey.Escape && key.Key != ConsoleKey.Enter);
-
-                if (key.Key == ConsoleKey.Escape)
-                {
-                    Console.WriteLine("Game exited by the player.");
-                    break;
-                }
 
                 try
                 {
@@ -481,6 +473,28 @@ namespace Connect4Group1FinalProject
                     Console.WriteLine("An error occured: " + e.Message);
                     Console.WriteLine("Press any key to continue...");
                     Console.ReadKey();
+                }
+            }
+
+            cancellationTokenSource.Cancel();
+        }
+
+        private void PlayerInputLoop()
+        {
+            while (!cancellationTokenSource.Token.IsCancellationRequested)
+            {
+                if (Console.KeyAvailable)
+                {
+                    var key = Console.ReadKey(true).Key;
+                    if (key == ConsoleKey.Escape)
+                    {
+                        Console.WriteLine("Game exited by the player.");
+                        cancellationTokenSource.Cancel();
+                    }
+                }
+                else
+                {
+                    Thread.Sleep(100);
                 }
             }
         }
