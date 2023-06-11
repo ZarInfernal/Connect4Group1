@@ -435,6 +435,19 @@ namespace Connect4Group1FinalProject
 
                 Console.WriteLine($"Current player: {(currentPlayer == player1 ? "Xeno" : "Oni")}");
 
+                ConsoleKeyInfo key;
+
+                do
+                {
+                    key = Console.ReadKey(true);
+                } while (key.Key != ConsoleKey.Escape && key.Key != ConsoleKey.Enter);
+
+                if (key.Key == ConsoleKey.Escape)
+                {
+                    Console.WriteLine("Game exited by the player.");
+                    break;
+                }
+
                 try
                 {
                     int move = currentPlayer.GetMove(board);
