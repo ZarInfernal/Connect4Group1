@@ -508,11 +508,11 @@ namespace Connect4Group1FinalProject
                         break;
                     case 2:
                         player1 = new Player(CellState.Xeno);
-                        player2 = new AIPlayer(CellState.Oni, 1);
+                        player2 = new AIPlayer(CellState.Oni, GetAIDifficulty("Oni"));
                         break;
                     case 3:
-                        player1 = new AIPlayer(CellState.Xeno, 1);
-                        player2 = new AIPlayer(CellState.Oni, 1);
+                        player1 = new AIPlayer(CellState.Xeno, GetAIDifficulty("Xeno"));
+                        player2 = new AIPlayer(CellState.Oni, GetAIDifficulty("Oni"));
                         break;
                     default:
                         throw new InvalidOperationException("Invalid game mode.");
@@ -530,6 +530,21 @@ namespace Connect4Group1FinalProject
                 Console.WriteLine("Press any key to exit...");
                 Console.ReadKey();
             }
+        }
+        static int GetAIDifficulty(string aiPlayerType)
+        {
+            Console.WriteLine($"\nSelect AI {aiPlayerType} difficulty (1-10): ");
+            Console.WriteLine("WARNING: Higher difficulty means more time the AI needs to think");
+            int aiDifficulty;
+            while (true)
+            {
+                if(int.TryParse(Console.ReadLine(), out aiDifficulty) && aiDifficulty >= 1 && aiDifficulty <= 10)
+                {
+                    break;
+                }
+                Console.WriteLine("Invalid AI difficulty. Try again.");
+            }
+            return aiDifficulty;
         }
     }
 }
