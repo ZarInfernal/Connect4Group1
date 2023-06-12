@@ -4,6 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
+using System.Web;
 
 namespace Connect4Group1FinalProject
 {
@@ -25,6 +26,7 @@ namespace Connect4Group1FinalProject
     interface IPlayer
     {
         CellState playerType { get; }
+        string playerName { get; }
         int GetMove(Board board);
     }
 
@@ -199,11 +201,13 @@ namespace Connect4Group1FinalProject
 
     class Player : IPlayer
     {
-         public CellState playerType { get; }
+        public CellState playerType { get; }
+        public string playerName { get; }
 
-         public Player(CellState PlayerType)
+         public Player(CellState PlayerType, string playerName)
          {
-             playerType = PlayerType;
+            playerType = PlayerType;
+            this.playerName = playerName;
          }
 
          public virtual int GetMove(Board board)
@@ -219,11 +223,13 @@ namespace Connect4Group1FinalProject
         private readonly int difficulty;
 
         public CellState playerType { get; }
+        public string playerName { get; }
 
-        public AIPlayer(CellState playerType, int difficulty)
+        public AIPlayer(CellState playerType, int difficulty, string playerName)
         {
             this.playerType = playerType;
             this.difficulty = difficulty;
+            this.playerName = "AI " + playerName;
         }
 
         public int GetMove(Board board)
@@ -406,9 +412,6 @@ namespace Connect4Group1FinalProject
         }
     }
 
-    // Class that will manage the game
-// Vergil: I updated the class ConnectFourGame to have the records of two players
-
     class ConnectFourGame
     {
         private readonly Board board;
@@ -435,11 +438,13 @@ namespace Connect4Group1FinalProject
 
             while (!cancellationTokenSource.Token.IsCancellationRequested)
             {
+                
                 Console.Clear();
                 board.PrintBoard(moveRecords);
 
-                Console.WriteLine($"Current player: {(currentPlayer == player1 ? "Xeno" : "Oni")}");
+                Console.WriteLine($"Current player: {(currentPlayer == player1 ? currentPlayer.playerName : currentPlayer.playerName)}");
 
+                
                 try
                 {
                     int move = currentPlayer.GetMove(board);
@@ -450,13 +455,13 @@ namespace Connect4Group1FinalProject
                     }
 
                     board.PlaceDisc(move, currentPlayer.playerType);
-                    moveRecords.Add($"{(currentPlayer == player1 ? "Xeno" : "Oni")} player chose column {move + 1}.");
+                    moveRecords.Add($"{(currentPlayer == player1 ? currentPlayer.playerName : currentPlayer.playerName)} chose column {move + 1}.");
 
                     if (board.IsGameOver(currentPlayer.playerType))
                     {
                         Console.Clear();
                         board.PrintBoard(moveRecords);
-                        Console.WriteLine($"{(currentPlayer == player1 ? "Xeno" : "Oni")} player wins!");
+                        Console.WriteLine($"{(currentPlayer == player1 ? currentPlayer.playerName : currentPlayer.playerName)} wins!");
                         break;
                     }
 
@@ -474,27 +479,21 @@ namespace Connect4Group1FinalProject
                     Console.WriteLine("Press any key to continue...");
                     Console.ReadKey();
                 }
+
             }
 
-            cancellationTokenSource.Cancel();
         }
 
         private void PlayerInputLoop()
         {
             while (!cancellationTokenSource.Token.IsCancellationRequested)
             {
-                if (Console.KeyAvailable)
+                ConsoleKeyInfo keyInfo = Console.ReadKey(true);
+                if (keyInfo.Key == ConsoleKey.Escape)
                 {
-                    var key = Console.ReadKey(true).Key;
-                    if (key == ConsoleKey.Escape)
-                    {
-                        Console.WriteLine("Game exited by the player.");
-                        cancellationTokenSource.Cancel();
-                    }
-                }
-                else
-                {
-                    Thread.Sleep(100);
+                    Console.WriteLine("Game exited by player.");
+                    cancellationTokenSource.Cancel();
+                    break;
                 }
             }
         }
@@ -547,16 +546,16 @@ namespace Connect4Group1FinalProject
                     switch (mode)
                     {
                         case 1:
-                            player1 = new Player(CellState.Xeno);
-                            player2 = new Player(CellState.Oni);
+                            player1 = new Player(CellState.Xeno, GetPlayerName("Xeno", 'X'));
+                            player2 = new Player(CellState.Oni, GetPlayerName("Oni", 'O'));
                             break;
                         case 2:
-                            player1 = new Player(CellState.Xeno);
-                            player2 = new AIPlayer(CellState.Oni, GetAIDifficulty("Oni"));
+                            player1 = new Player(CellState.Xeno, GetPlayerName("Xeno", 'X'));
+                            player2 = new AIPlayer(CellState.Oni, GetAIDifficulty("Oni"), "Oni(O)");
                             break;
                         case 3:
-                            player1 = new AIPlayer(CellState.Xeno, GetAIDifficulty("Xeno"));
-                            player2 = new AIPlayer(CellState.Oni, GetAIDifficulty("Oni"));
+                            player1 = new AIPlayer(CellState.Xeno, GetAIDifficulty("Xeno"), "Xeno(X)");
+                            player2 = new AIPlayer(CellState.Oni, GetAIDifficulty("Oni"), "Oni(O)");
                             break;
                         default:
                             throw new InvalidOperationException("Invalid game mode.");
@@ -583,6 +582,18 @@ namespace Connect4Group1FinalProject
                     Console.WriteLine("Exiting the game...");
                 }
             }
+        }
+
+        static string GetPlayerName(string playerType, char display)
+        {
+            Console.WriteLine($"\nType display name for {playerType}: ");
+            string playerName = Console.ReadLine();
+            if (string.IsNullOrWhiteSpace(playerName))
+            {
+                playerName = playerType;
+            }
+            return playerName + "(" + display + ")";
+
         }
         static int GetAIDifficulty(string aiPlayerType)
         {
