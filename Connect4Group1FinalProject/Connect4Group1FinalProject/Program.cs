@@ -50,7 +50,17 @@ namespace Connect4Group1FinalProject
                     cells[row, col] = CellState.Empty;
 
         }
-
+        
+        public void ClearBoard()
+        {
+            for (int row = 0; row < Rows; row++)
+            {
+                for (int col = 0; col < Cols; col++)
+                {
+                    cells[row, col] = CellState.Empty;
+                }
+            }
+        }
         public bool IsColumnFull(int col)
         {
             return cells[0, col] != CellState.Empty;
@@ -420,6 +430,7 @@ namespace Connect4Group1FinalProject
         private IPlayer currentPlayer;
         private List<string> moveRecords;
         private CancellationTokenSource cancellationTokenSource;
+        private bool gamePaused;
 
         public ConnectFourGame(IPlayer player1, IPlayer player2)
         {
@@ -428,60 +439,154 @@ namespace Connect4Group1FinalProject
             this.player2 = player2;
             moveRecords = new List<string>();
             cancellationTokenSource = new CancellationTokenSource();
+            gamePaused = false;
         }
 
         public void StartGame()
         {
             currentPlayer = player1;
-
             Task.Run(() => PlayerInputLoop());
 
             while (!cancellationTokenSource.Token.IsCancellationRequested)
             {
-                
-                Console.Clear();
-                board.PrintBoard(moveRecords);
-
-                Console.WriteLine($"Current player: {(currentPlayer == player1 ? currentPlayer.playerName : currentPlayer.playerName)}");
-
-                
-                try
+                if (!gamePaused)
                 {
-                    int move = currentPlayer.GetMove(board);
-                    while (board.IsColumnFull(move))
+                    Console.Clear();
+                    board.PrintBoard(moveRecords);
+                    Console.WriteLine($"Current player: {currentPlayer.playerName}");
+
+                    try
                     {
-                        Console.WriteLine("Column is full. Choose a different column.");
-                        move = currentPlayer.GetMove(board);
+                        int move = currentPlayer.GetMove(board);
+                        while (board.IsColumnFull(move))
+                        {
+                            Console.WriteLine("Column is full. Choose a different column.");
+                            move = currentPlayer.GetMove(board);
+                        }
+
+                        board.PlaceDisc(move, currentPlayer.playerType);
+                        moveRecords.Add($"{currentPlayer.playerName} chose column {move + 1}.");
+
+                        if (board.IsGameOver(currentPlayer.playerType))
+                        {
+                            Console.Clear();
+                            board.PrintBoard(moveRecords);
+                            Console.WriteLine($"{currentPlayer.playerName} wins!");
+                            ShowEndGameOptions();
+                            break;
+                        }
+
+                        currentPlayer = (currentPlayer == player1) ? player2 : player1;
                     }
-
-                    board.PlaceDisc(move, currentPlayer.playerType);
-                    moveRecords.Add($"{(currentPlayer == player1 ? currentPlayer.playerName : currentPlayer.playerName)} chose column {move + 1}.");
-
-                    if (board.IsGameOver(currentPlayer.playerType))
+                    catch (FormatException e)
                     {
-                        Console.Clear();
-                        board.PrintBoard(moveRecords);
-                        Console.WriteLine($"{(currentPlayer == player1 ? currentPlayer.playerName : currentPlayer.playerName)} wins!");
-                        break;
+                        Console.WriteLine("An error occurred: " + e.Message);
+                        Console.WriteLine("Press any key to continue...");
+                        Console.ReadKey();
                     }
-
-                    currentPlayer = (currentPlayer == player1) ? player2 : player1;
+                    catch (IndexOutOfRangeException e)
+                    {
+                        Console.WriteLine("An error occurred: " + e.Message);
+                        Console.WriteLine("Press any key to continue...");
+                        Console.ReadKey();
+                    }
                 }
-                catch (FormatException e)
+                else
                 {
-                    Console.WriteLine("An error occurred: " + e.Message);
-                    Console.WriteLine("Press any key to continue...");
-                    Console.ReadKey();
+                    Console.Clear();
+                    board.PrintBoard(moveRecords);
+                    ShowPauseMenuOptions();
                 }
-                catch (IndexOutOfRangeException e)
+            }
+        }
+
+        private void ShowPauseMenuOptions()
+        {
+            Console.WriteLine("\nGame Paused");
+            Console.WriteLine("1. Resume Game");
+            Console.WriteLine("2. Reset Game");
+            Console.WriteLine("3. Return to Main Menu");
+            Console.WriteLine("4. Exit Game\n");
+
+            Console.Write("Enter your choice (1-4): ");
+            int choice;
+            while (true)
+            {
+                if (int.TryParse(Console.ReadLine(), out choice) && choice >= 1 && choice <= 4)
                 {
-                    Console.WriteLine("An error occured: " + e.Message);
-                    Console.WriteLine("Press any key to continue...");
-                    Console.ReadKey();
+                    break;
                 }
 
+                Console.WriteLine("Invalid choice. Try again.");
             }
 
+            switch (choice)
+            {
+                case 1:
+                    gamePaused = false;
+                    break;
+                case 2:
+                    ResetGame();
+                    break;
+                case 3:
+                    cancellationTokenSource.Cancel();
+                    break;
+                case 4:
+                    Console.WriteLine("Exiting the game...");
+                    cancellationTokenSource.Cancel();
+                    Environment.Exit(0); // Exit the program
+                    break;
+                default:
+                    Console.WriteLine("Invalid choice. Resuming game...");
+                    gamePaused = false;
+                    break;
+            }
+        }
+
+        private void ShowEndGameOptions()
+        {
+            Console.WriteLine("\nGAME OVER!");
+            Console.WriteLine("1. Reset Game");
+            Console.WriteLine("2. Return to Main Menu");
+            Console.WriteLine("3. Exit Game\n");
+
+            Console.Write("Enter your choice (1-3): ");
+            int choice;
+            while (true)
+            {
+                if (int.TryParse(Console.ReadLine(), out choice) && choice >= 1 && choice <= 3)
+                {
+                    break;
+                }
+
+                Console.WriteLine("Invalid choice. Try again.");
+            }
+
+            switch (choice)
+            {
+                case 1:
+                    ResetGame();
+                    break;
+                case 2:
+                    cancellationTokenSource.Cancel();
+                    break;
+                case 3:
+                    Console.WriteLine("Exiting the game...");
+                    cancellationTokenSource.Cancel();
+                    Environment.Exit(0); // Exit the program
+                    break;
+                default:
+                    Console.WriteLine("Invalid choice. Resuming game...");
+                    break;
+            }
+        }
+
+        private void ResetGame()
+        {
+            board.ClearBoard();
+            moveRecords.Clear();
+            currentPlayer = player1;
+            gamePaused = false;
         }
 
         private void PlayerInputLoop()
@@ -491,9 +596,7 @@ namespace Connect4Group1FinalProject
                 ConsoleKeyInfo keyInfo = Console.ReadKey(true);
                 if (keyInfo.Key == ConsoleKey.Escape)
                 {
-                    Console.WriteLine("Game exited by player.");
-                    cancellationTokenSource.Cancel();
-                    break;
+                    gamePaused = true;
                 }
             }
         }
@@ -568,18 +671,6 @@ namespace Connect4Group1FinalProject
                 catch (FormatException ex)
                 {
                     Console.WriteLine("An error occurred: " + ex.Message);
-                }
-
-                Console.WriteLine("\nPress R to return to the main menu or press any other key to exit the game...");
-                var key = Console.ReadKey();
-                if (key.KeyChar == 'r' || key.KeyChar == 'R')
-                {
-                    Console.Clear(); // Clear the console screen
-                }
-                else
-                {
-                    exitGame = true;
-                    Console.WriteLine("Exiting the game...");
                 }
             }
         }
