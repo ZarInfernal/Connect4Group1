@@ -27,7 +27,7 @@ namespace Connect4Group1FinalProject
     {
         CellState playerType { get; }
         string playerName { get; }
-        int GetMove(Board board);
+        Task<int> GetMove(Board board);
     }
 
     // Class to representing the game board
@@ -220,11 +220,12 @@ namespace Connect4Group1FinalProject
             this.playerName = playerName;
          }
 
-         public virtual int GetMove(Board board)
+         public async Task<int> GetMove(Board board)
          {
-             Console.WriteLine("Enter the column number (1-7): ");
-             int move = int.Parse(Console.ReadLine());
-             return move - 1; // This will make so if 1 is entered it will be 0 instead so the inputs are 1 - 7 instead of 0 - 6
+            Console.WriteLine("Enter the column number (1-7): ");
+            string input = await Task.Run(Console.ReadLine);
+            int move = int.Parse(input);
+            return move - 1; // This will make so if 1 is entered it will be 0 instead so the inputs are 1 - 7 instead of 0 - 6
          }
     }
 
@@ -242,7 +243,7 @@ namespace Connect4Group1FinalProject
             this.playerName = "AI " + playerName;
         }
 
-        public int GetMove(Board board)
+        public Task<int> GetMove(Board board)
         {
             Console.WriteLine("AI is thinking...");
             System.Threading.Thread.Sleep(1000);
@@ -265,7 +266,7 @@ namespace Connect4Group1FinalProject
                 move = availableColumns[random.Next(availableColumns.Count)];
             }
 
-            return move;
+            return Task.FromResult(move);
         }
 
         private (int move, int score) Minimax(Board board, int depth, int alpha, int beta, bool maximizingPlayer)
@@ -442,10 +443,10 @@ namespace Connect4Group1FinalProject
             gamePaused = false;
         }
 
-        public void StartGame()
+        public async Task StartGame()
         {
             currentPlayer = player1;
-            Task.Run(() => PlayerInputLoop());
+            Task.Run(PlayerInputLoop);
 
             while (!cancellationTokenSource.Token.IsCancellationRequested)
             {
@@ -457,11 +458,11 @@ namespace Connect4Group1FinalProject
 
                     try
                     {
-                        int move = currentPlayer.GetMove(board);
+                        var move = await currentPlayer.GetMove(board).ConfigureAwait(false);
                         while (board.IsColumnFull(move))
                         {
                             Console.WriteLine("Column is full. Choose a different column.");
-                            move = currentPlayer.GetMove(board);
+                            move = await currentPlayer.GetMove(board).ConfigureAwait(false);
                         }
 
                         board.PlaceDisc(move, currentPlayer.playerType);
@@ -490,6 +491,7 @@ namespace Connect4Group1FinalProject
                         Console.WriteLine("Press any key to continue...");
                         Console.ReadKey();
                     }
+
                 }
                 else
                 {
@@ -512,12 +514,17 @@ namespace Connect4Group1FinalProject
             int choice;
             while (true)
             {
-                if (int.TryParse(Console.ReadLine(), out choice) && choice >= 1 && choice <= 4)
+                if (int.TryParse(Console.ReadLine().Trim(), out choice) && choice >= 1 && choice <= 4)
                 {
                     break;
                 }
 
                 Console.WriteLine("Invalid choice. Try again.");
+            }
+
+            while (Console.KeyAvailable)
+            {
+                Console.ReadKey(false);
             }
 
             switch (choice)
@@ -530,6 +537,7 @@ namespace Connect4Group1FinalProject
                     break;
                 case 3:
                     cancellationTokenSource.Cancel();
+                    Console.Clear();
                     break;
                 case 4:
                     Console.WriteLine("Exiting the game...");
@@ -554,12 +562,17 @@ namespace Connect4Group1FinalProject
             int choice;
             while (true)
             {
-                if (int.TryParse(Console.ReadLine(), out choice) && choice >= 1 && choice <= 3)
+                if (int.TryParse(Console.ReadLine().Trim(), out choice) && choice >= 1 && choice <= 3)
                 {
                     break;
                 }
 
                 Console.WriteLine("Invalid choice. Try again.");
+            }
+
+            while (Console.KeyAvailable)
+            {
+                Console.ReadKey(false);
             }
 
             switch (choice)
@@ -569,6 +582,7 @@ namespace Connect4Group1FinalProject
                     break;
                 case 2:
                     cancellationTokenSource.Cancel();
+                    Console.Clear();
                     break;
                 case 3:
                     Console.WriteLine("Exiting the game...");
@@ -589,88 +603,99 @@ namespace Connect4Group1FinalProject
             gamePaused = false;
         }
 
-        private void PlayerInputLoop()
+        private async Task PlayerInputLoop()
         {
             while (!cancellationTokenSource.Token.IsCancellationRequested)
             {
-                ConsoleKeyInfo keyInfo = Console.ReadKey(true);
+
+                ConsoleKeyInfo keyInfo = Console.ReadKey(intercept: true);
                 if (keyInfo.Key == ConsoleKey.Escape)
                 {
-                    gamePaused = true;
+                    gamePaused = !gamePaused;
                 }
+
+                await Task.Delay(50);
             }
         }
+
     }
 
 
-    internal class Program
+    class Program
     {
+        static bool runMain = false;
         static void Main(string[] args)
         {
             bool exitGame = false;
 
+
             while (!exitGame)
             {
-                try
+                if (!runMain)
                 {
-                    Console.WriteLine("Connect Four Game");
-                    Console.WriteLine("=================");
-                    Console.WriteLine("Game Modes:");
-                    Console.WriteLine("1. Human vs. Human");
-                    Console.WriteLine("2. Human vs. AI");
-                    Console.WriteLine("3. AI vs. AI");
-                    Console.WriteLine("4. Exit Game");
-                    Console.WriteLine();
-
-
-
-                    Console.Write("Enter the game mode (1-4): ");
-                    int mode;
-                    while (true)
+                    try
                     {
-                        if (int.TryParse(Console.ReadLine(), out mode) && mode >= 1 && mode <= 4)
+                        Console.WriteLine("Connect Four Game");
+                        Console.WriteLine("=================");
+                        Console.WriteLine("Game Modes:");
+                        Console.WriteLine("1. Human vs. Human");
+                        Console.WriteLine("2. Human vs. AI");
+                        Console.WriteLine("3. AI vs. AI");
+                        Console.WriteLine("4. Exit Game");
+                        Console.WriteLine();
+
+
+
+                        Console.Write("Enter the game mode (1-4): ");
+                        int mode;
+                        while (true)
                         {
+                            if (int.TryParse(Console.ReadLine(), out mode) && mode >= 1 && mode <= 4)
+                            {
+                                break;
+                            }
+
+
+
+                            Console.WriteLine("Invalid game mode. Try again.");
+                        }
+
+                        if (mode == 4)
+                        {
+                            Console.WriteLine("Exiting the game...");
+                            exitGame = true;
                             break;
                         }
 
+                        IPlayer player1, player2;
+                        switch (mode)
+                        {
+                            case 1:
+                                player1 = new Player(CellState.Xeno, GetPlayerName("Xeno", 'X'));
+                                player2 = new Player(CellState.Oni, GetPlayerName("Oni", 'O'));
+                                break;
+                            case 2:
+                                player1 = new Player(CellState.Xeno, GetPlayerName("Xeno", 'X'));
+                                player2 = new AIPlayer(CellState.Oni, GetAIDifficulty("Oni"), "Oni(O)");
+                                break;
+                            case 3:
+                                player1 = new AIPlayer(CellState.Xeno, GetAIDifficulty("Xeno"), "Xeno(X)");
+                                player2 = new AIPlayer(CellState.Oni, GetAIDifficulty("Oni"), "Oni(O)");
+                                break;
+                            default:
+                                throw new InvalidOperationException("Invalid game mode.");
+                        }
 
-
-                        Console.WriteLine("Invalid game mode. Try again.");
+                        ConnectFourGame game = new ConnectFourGame(player1, player2);
+                        runMain = true;
+                        Task task = game.StartGame();
+                        runMain = false;
                     }
 
-                    if (mode == 4)
+                    catch (FormatException ex)
                     {
-                        Console.WriteLine("Exiting the game...");
-                        exitGame = true;
-                        break;
+                        Console.WriteLine("An error occurred: " + ex.Message);
                     }
-
-                    IPlayer player1, player2;
-                    switch (mode)
-                    {
-                        case 1:
-                            player1 = new Player(CellState.Xeno, GetPlayerName("Xeno", 'X'));
-                            player2 = new Player(CellState.Oni, GetPlayerName("Oni", 'O'));
-                            break;
-                        case 2:
-                            player1 = new Player(CellState.Xeno, GetPlayerName("Xeno", 'X'));
-                            player2 = new AIPlayer(CellState.Oni, GetAIDifficulty("Oni"), "Oni(O)");
-                            break;
-                        case 3:
-                            player1 = new AIPlayer(CellState.Xeno, GetAIDifficulty("Xeno"), "Xeno(X)");
-                            player2 = new AIPlayer(CellState.Oni, GetAIDifficulty("Oni"), "Oni(O)");
-                            break;
-                        default:
-                            throw new InvalidOperationException("Invalid game mode.");
-                    }
-
-                    ConnectFourGame game = new ConnectFourGame(player1, player2);
-                    game.StartGame();
-                }
-
-                catch (FormatException ex)
-                {
-                    Console.WriteLine("An error occurred: " + ex.Message);
                 }
             }
         }
