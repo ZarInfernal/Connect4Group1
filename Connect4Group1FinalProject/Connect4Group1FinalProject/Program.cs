@@ -458,11 +458,26 @@ namespace Connect4Group1FinalProject
 
                     try
                     {
-                        var move = await currentPlayer.GetMove(board).ConfigureAwait(false);
+                        int move;
+                        if (currentPlayer is AIPlayer)
+                        {
+                            move = await currentPlayer.GetMove(board);
+                        }
+                        else
+                        {
+                            move = await currentPlayer.GetMove(board).ConfigureAwait(false);
+                        }
                         while (board.IsColumnFull(move))
                         {
                             Console.WriteLine("Column is full. Choose a different column.");
-                            move = await currentPlayer.GetMove(board).ConfigureAwait(false);
+                            if (currentPlayer is AIPlayer)
+                            {
+                                move = await currentPlayer.GetMove(board);
+                            }
+                            else
+                            {
+                                move = await currentPlayer.GetMove(board).ConfigureAwait(false);
+                            }
                         }
 
                         board.PlaceDisc(move, currentPlayer.playerType);
@@ -623,80 +638,81 @@ namespace Connect4Group1FinalProject
 
     class Program
     {
-        static bool runMain = false;
         static void Main(string[] args)
         {
             bool exitGame = false;
 
-
             while (!exitGame)
             {
-                if (!runMain)
+
+
+                try
                 {
-                    try
+
+                    Console.WriteLine("Connect Four Game");
+                    Console.WriteLine("=================");
+                    Console.WriteLine("Game Modes:");
+                    Console.WriteLine("1. Human vs. Human");
+                    Console.WriteLine("2. Human vs. AI");
+                    Console.WriteLine("3. AI vs. AI");
+                    Console.WriteLine("4. Exit Game");
+                    Console.WriteLine();
+
+
+
+                    Console.Write("Enter the game mode (1-4): ");
+                    int mode;
+                    while (true)
                     {
-                        Console.WriteLine("Connect Four Game");
-                        Console.WriteLine("=================");
-                        Console.WriteLine("Game Modes:");
-                        Console.WriteLine("1. Human vs. Human");
-                        Console.WriteLine("2. Human vs. AI");
-                        Console.WriteLine("3. AI vs. AI");
-                        Console.WriteLine("4. Exit Game");
-                        Console.WriteLine();
-
-
-
-                        Console.Write("Enter the game mode (1-4): ");
-                        int mode;
-                        while (true)
+                        if (int.TryParse(Console.ReadLine(), out mode) && mode >= 1 && mode <= 4)
                         {
-                            if (int.TryParse(Console.ReadLine(), out mode) && mode >= 1 && mode <= 4)
-                            {
-                                break;
-                            }
-
-
-
-                            Console.WriteLine("Invalid game mode. Try again.");
-                        }
-
-                        if (mode == 4)
-                        {
-                            Console.WriteLine("Exiting the game...");
-                            exitGame = true;
                             break;
                         }
 
-                        IPlayer player1, player2;
-                        switch (mode)
-                        {
-                            case 1:
-                                player1 = new Player(CellState.Xeno, GetPlayerName("Xeno", 'X'));
-                                player2 = new Player(CellState.Oni, GetPlayerName("Oni", 'O'));
-                                break;
-                            case 2:
-                                player1 = new Player(CellState.Xeno, GetPlayerName("Xeno", 'X'));
-                                player2 = new AIPlayer(CellState.Oni, GetAIDifficulty("Oni"), "Oni(O)");
-                                break;
-                            case 3:
-                                player1 = new AIPlayer(CellState.Xeno, GetAIDifficulty("Xeno"), "Xeno(X)");
-                                player2 = new AIPlayer(CellState.Oni, GetAIDifficulty("Oni"), "Oni(O)");
-                                break;
-                            default:
-                                throw new InvalidOperationException("Invalid game mode.");
-                        }
 
-                        ConnectFourGame game = new ConnectFourGame(player1, player2);
-                        runMain = true;
-                        Task task = game.StartGame();
-                        runMain = false;
+
+                        Console.WriteLine("Invalid game mode. Try again.");
                     }
 
-                    catch (FormatException ex)
+                    if (mode == 4)
                     {
-                        Console.WriteLine("An error occurred: " + ex.Message);
+                        Console.WriteLine("Exiting the game...");
+                        exitGame = true;
+                        break;
                     }
+
+                    IPlayer player1, player2;
+                    switch (mode)
+                    {
+                        case 1:
+                            player1 = new Player(CellState.Xeno, GetPlayerName("Xeno", 'X'));
+                            player2 = new Player(CellState.Oni, GetPlayerName("Oni", 'O'));
+                            break;
+                        case 2:
+                            player1 = new Player(CellState.Xeno, GetPlayerName("Xeno", 'X'));
+                            player2 = new AIPlayer(CellState.Oni, GetAIDifficulty("Oni"), "Oni(O)");
+                            break;
+                        case 3:
+                            player1 = new AIPlayer(CellState.Xeno, GetAIDifficulty("Xeno"), "Xeno(X)");
+                            player2 = new AIPlayer(CellState.Oni, GetAIDifficulty("Oni"), "Oni(O)");
+                            break;
+                        default:
+                            throw new InvalidOperationException("Invalid game mode.");
+                    }
+
+                    ConnectFourGame game = new ConnectFourGame(player1, player2);
+                    Task task = game.StartGame();
+                    task.Wait();
                 }
+
+
+
+
+                catch (FormatException ex)
+                {
+                    Console.WriteLine("An error occurred: " + ex.Message);
+                }
+                
             }
         }
 
