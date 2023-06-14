@@ -171,7 +171,7 @@ namespace Connect4Group1FinalProject
                     {
                         Console.WriteLine("Invalid input. Try again.");
                     }
-                    return playerMove;
+                    return playerMove - 1;
                 });
             }
             return move;
