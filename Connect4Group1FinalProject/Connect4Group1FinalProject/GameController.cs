@@ -196,7 +196,7 @@ namespace Connect4Group1FinalProject
 
                     do
                     {
-                        if (Console.KeyAvailable)
+                        while (Console.KeyAvailable)
                         {
                             ConsoleKeyInfo keyInfo = Console.ReadKey(intercept: true);
 
@@ -238,10 +238,6 @@ namespace Connect4Group1FinalProject
                                 }
                             }
                         }
-                        else
-                        {
-                            Thread.Sleep(50); // Delay to avoid CPU usage spike
-                        }
                     } while (!inputReceived);
 
                     return playerMove;
@@ -250,6 +246,7 @@ namespace Connect4Group1FinalProject
 
             return move;
         }
+
 
 
 
