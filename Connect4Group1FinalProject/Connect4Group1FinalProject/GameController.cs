@@ -30,13 +30,27 @@ namespace Connect4Group1FinalProject
 
             while (true)
             {
-                if (!gamePaused)
-                {
-                    Console.Clear();
-                    board.PrintBoard(moveRecords);
-                    Console.WriteLine($"Current player: {currentPlayer.playerName}");
 
-                    int move;
+                Console.Clear();
+                board.PrintBoard(moveRecords);
+                Console.WriteLine($"Current player: {currentPlayer.playerName}");
+
+                int move;
+                try
+                {
+                    move = GetPlayerMoveAsync(currentPlayer).GetAwaiter().GetResult();
+                }
+                catch (Exception e)
+                {
+                    Console.WriteLine($"Error occurred: {e.Message}");
+                    Console.WriteLine("Press any key to continue...");
+                    Console.ReadKey();
+                    continue;
+                }
+
+                while (board.IsColumnFull(move))
+                {
+                    Console.WriteLine("Column is full. Choose a different column.");
                     try
                     {
                         move = GetPlayerMoveAsync(currentPlayer).GetAwaiter().GetResult();
@@ -48,44 +62,24 @@ namespace Connect4Group1FinalProject
                         Console.ReadKey();
                         continue;
                     }
-
-                    while (board.IsColumnFull(move))
-                    {
-                        Console.WriteLine("Column is full. Choose a different column.");
-                        try
-                        {
-                            move = GetPlayerMoveAsync(currentPlayer).GetAwaiter().GetResult();
-                        }
-                        catch (Exception e)
-                        {
-                            Console.WriteLine($"Error occurred: {e.Message}");
-                            Console.WriteLine("Press any key to continue...");
-                            Console.ReadKey();
-                            continue;
-                        }
-                    }
-
-                    board.PlaceDisc(move, currentPlayer.playerType);
-                    moveRecords.Add($"{currentPlayer.playerName} chose column {move + 1}.");
-
-                    if (board.IsGameOver(currentPlayer.playerType))
-                    {
-                        Console.Clear();
-                        board.PrintBoard(moveRecords);
-                        Console.WriteLine($"{currentPlayer.playerName} wins!");
-                        if (!ShowEndGameOptions())
-                            break;
-                    }
-
-                    currentPlayer = (currentPlayer == player1) ? player2 : player1;
                 }
-                else
+
+                board.PlaceDisc(move, currentPlayer.playerType);
+                moveRecords.Add($"{currentPlayer.playerName} chose column {move + 1}.");
+
+                if (board.IsGameOver(currentPlayer.playerType))
                 {
                     Console.Clear();
                     board.PrintBoard(moveRecords);
-                    if (!ShowPauseMenuOptions())
+                    Console.WriteLine($"{currentPlayer.playerName} wins!");
+                    if (!ShowEndGameOptions())
                         break;
                 }
+
+                currentPlayer = (currentPlayer == player1) ? player2 : player1;
+
+
+
             }
         }
 
@@ -114,6 +108,8 @@ namespace Connect4Group1FinalProject
             {
                 case 1:
                     gamePaused = false;
+                    Console.Clear();
+                    board.PrintBoard(moveRecords);
                     return true;
                 case 2:
                     ResetGame();
@@ -196,37 +192,65 @@ namespace Connect4Group1FinalProject
                 move = await Task.Run(() =>
                 {
                     int playerMove = -1;
-                    while (playerMove < 0)
+                    bool inputReceived = false;
+
+                    do
                     {
                         if (Console.KeyAvailable)
                         {
                             ConsoleKeyInfo keyInfo = Console.ReadKey(intercept: true);
+
                             if (keyInfo.Key == ConsoleKey.Escape)
                             {
                                 gamePaused = !gamePaused;
-                                continue;
-                            }
-
-                            if (int.TryParse(keyInfo.KeyChar.ToString(), out playerMove))
-                            {
-                                playerMove--; // Adjust the move index
-                                if (playerMove < 0 || playerMove >= 6)
+                                if (gamePaused)
                                 {
-                                    Console.WriteLine("Invalid column. Try again.");
-                                    playerMove = -1;
+                                    Console.Clear();
+                                    board.PrintBoard(moveRecords);
+                                    if (!ShowPauseMenuOptions())
+                                        break;
+                                }
+                                else
+                                {
+                                    Console.Clear();
+                                    board.PrintBoard(moveRecords);
+                                    Console.WriteLine($"Current player: {currentPlayer.playerName}");
                                 }
                             }
                             else
                             {
-                                Console.WriteLine("Invalid input. Try again.");
+                                if (int.TryParse(keyInfo.KeyChar.ToString(), out playerMove))
+                                {
+                                    playerMove--; // Adjust the move index
+                                    if (playerMove < 0 || playerMove >= 6)
+                                    {
+                                        Console.WriteLine("Invalid column. Try again.");
+                                        playerMove = -1;
+                                    }
+                                    else
+                                    {
+                                        inputReceived = true; // Mark input as received
+                                    }
+                                }
+                                else
+                                {
+                                    Console.WriteLine("Invalid input. Try again.");
+                                }
                             }
                         }
-                    }
+                        else
+                        {
+                            Thread.Sleep(50); // Delay to avoid CPU usage spike
+                        }
+                    } while (!inputReceived);
+
                     return playerMove;
                 });
             }
+
             return move;
         }
+
 
 
         private void PlayerInputLoop()
