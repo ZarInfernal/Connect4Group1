@@ -1,7 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
 using System.Threading.Tasks;
 
 namespace Connect4Group1FinalProject
@@ -11,9 +9,9 @@ namespace Connect4Group1FinalProject
         public CellState playerType { get; }
         public string playerName { get; }
 
-        public Player(CellState PlayerType, string playerName)
+        public Player(CellState playerType, string playerName)
         {
-            playerType = PlayerType;
+            this.playerType = playerType;
             this.playerName = playerName;
         }
 
@@ -21,14 +19,20 @@ namespace Connect4Group1FinalProject
         {
             Console.WriteLine("Enter the column number (1-7): ");
             string input = await Task.Run(Console.ReadLine);
-            int move = int.Parse(input);
-            return move - 1; // This will make so if 1 is entered it will be 0 instead so the inputs are 1 - 7 instead of 0 - 6
+            int move;
+            while (!int.TryParse(input, out move) || move < 1 || move > 7)
+            {
+                Console.WriteLine("Invalid input. Enter the column number (1-7): ");
+                input = await Task.Run(Console.ReadLine);
+            }
+            return move - 1;
         }
     }
 
     class AIPlayer : IPlayer
     {
         private readonly int difficulty;
+        private readonly Random random;
 
         public CellState playerType { get; }
         public string playerName { get; }
@@ -38,16 +42,16 @@ namespace Connect4Group1FinalProject
             this.playerType = playerType;
             this.difficulty = difficulty;
             this.playerName = "AI " + playerName;
+            random = new Random();
         }
 
         public Task<int> GetMove(Board board)
         {
             Console.WriteLine("AI is thinking...");
-            System.Threading.Thread.Sleep(1000);
+            Task.Delay(1000).Wait();
 
             int move = Minimax(board, difficulty, int.MinValue, int.MaxValue, true).move;
 
-            // If no valid move is found, choose a random move from the available columns
             if (move == -1)
             {
                 List<int> availableColumns = new List<int>();
@@ -59,7 +63,6 @@ namespace Connect4Group1FinalProject
                     }
                 }
 
-                Random random = new Random();
                 move = availableColumns[random.Next(availableColumns.Count)];
             }
 
@@ -119,7 +122,6 @@ namespace Connect4Group1FinalProject
         {
             int score = 0;
 
-            // Evaluate rows
             for (int row = 0; row < Board.Rows; row++)
             {
                 for (int col = 0; col <= Board.Cols - 4; col++)
@@ -128,7 +130,6 @@ namespace Connect4Group1FinalProject
                 }
             }
 
-            // Evaluate columns
             for (int col = 0; col < Board.Cols; col++)
             {
                 for (int row = 0; row <= Board.Rows - 4; row++)
@@ -137,7 +138,6 @@ namespace Connect4Group1FinalProject
                 }
             }
 
-            // Evaluate diagonals (top-left to bottom-right)
             for (int row = 0; row <= Board.Rows - 4; row++)
             {
                 for (int col = 0; col <= Board.Cols - 4; col++)
@@ -146,7 +146,6 @@ namespace Connect4Group1FinalProject
                 }
             }
 
-            // Evaluate diagonals (bottom-left to top-right)
             for (int row = 3; row < Board.Rows; row++)
             {
                 for (int col = 0; col <= Board.Cols - 4; col++)
