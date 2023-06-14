@@ -1,8 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace Connect4Group1FinalProject
 {
@@ -21,14 +18,6 @@ namespace Connect4Group1FinalProject
         private void InitializeBoard()
         {
             for (int row = 0; row < Rows; row++)
-                for (int col = 0; col < Cols; col++)
-                    cells[row, col] = CellState.Empty;
-
-        }
-
-        public void ClearBoard()
-        {
-            for (int row = 0; row < Rows; row++)
             {
                 for (int col = 0; col < Cols; col++)
                 {
@@ -36,6 +25,12 @@ namespace Connect4Group1FinalProject
                 }
             }
         }
+
+        public void ClearBoard()
+        {
+            InitializeBoard();
+        }
+
         public bool IsColumnFull(int col)
         {
             return cells[0, col] != CellState.Empty;
@@ -46,7 +41,7 @@ namespace Connect4Group1FinalProject
             return cells[row, col];
         }
 
-        public bool PlaceDisc(int col, CellState player) //Input player cellstate
+        public bool PlaceDisc(int col, CellState player)
         {
             for (int row = Rows - 1; row >= 0; row--)
             {
@@ -57,7 +52,7 @@ namespace Connect4Group1FinalProject
                 }
             }
 
-            return false; //Column is full
+            return false;
         }
 
         public void RemoveDisc(int col)
@@ -138,7 +133,9 @@ namespace Connect4Group1FinalProject
             foreach (CellState cell in cellState)
             {
                 if (cell != player)
+                {
                     return false;
+                }
             }
             return true;
         }
@@ -179,8 +176,7 @@ namespace Connect4Group1FinalProject
                 Console.WriteLine(moveRecords[i]);
             }
 
-            Console.WriteLine("\n");
+            Console.WriteLine();
         }
-
     }
 }
