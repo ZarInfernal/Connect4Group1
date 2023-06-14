@@ -92,8 +92,7 @@ namespace Connect4Group1FinalProject
                     }
 
                     ConnectFourGame game = new ConnectFourGame(player1, player2);
-                    Task task = game.StartGame();
-                    task.Wait();
+                    game.StartGame();
                 }
 
 
