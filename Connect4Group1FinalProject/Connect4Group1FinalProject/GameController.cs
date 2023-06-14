@@ -222,7 +222,7 @@ namespace Connect4Group1FinalProject
                                 if (int.TryParse(keyInfo.KeyChar.ToString(), out playerMove))
                                 {
                                     playerMove--; // Adjust the move index
-                                    if (playerMove < 0 || playerMove >= 6)
+                                    if (playerMove < 0 || playerMove > 6)
                                     {
                                         Console.WriteLine("Invalid column. Try again.");
                                         playerMove = -1;
