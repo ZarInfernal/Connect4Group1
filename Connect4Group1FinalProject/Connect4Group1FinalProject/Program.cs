@@ -32,6 +32,7 @@ namespace Connect4Group1FinalProject
         static void Main(string[] args)
         {
             bool exitGame = false;
+            ConnectFourGame game = null;
 
             while (!exitGame)
             {
@@ -91,7 +92,7 @@ namespace Connect4Group1FinalProject
                             throw new InvalidOperationException("Invalid game mode.");
                     }
 
-                    ConnectFourGame game = new ConnectFourGame(player1, player2);
+                    game = new ConnectFourGame(player1, player2);
                     game.StartGame();
                 }
 
@@ -101,6 +102,11 @@ namespace Connect4Group1FinalProject
                 catch (FormatException ex)
                 {
                     Console.WriteLine("An error occurred: " + ex.Message);
+                }
+                finally
+                {
+                    game = null;
+                    Console.Clear();
                 }
                 
             }

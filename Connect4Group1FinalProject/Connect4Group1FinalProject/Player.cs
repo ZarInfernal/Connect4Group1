@@ -9,25 +9,51 @@ namespace Connect4Group1FinalProject
         public CellState playerType { get; }
         public string playerName { get; }
 
+        private int? lastMove;
+
         public Player(CellState playerType, string playerName)
         {
             this.playerType = playerType;
             this.playerName = playerName;
+            lastMove = null;
         }
 
         public async Task<int> GetMove(Board board)
         {
-            Console.WriteLine("Enter the column number (1-7): ");
-            string input = await Task.Run(Console.ReadLine);
-            int move;
-            while (!int.TryParse(input, out move) || move < 1 || move > 7)
+            int move = -1;
+            bool inputReceived = false;
+
+            while (!inputReceived)
             {
-                Console.WriteLine("Invalid input. Enter the column number (1-7): ");
-                input = await Task.Run(Console.ReadLine);
+                if (lastMove.HasValue)
+                {
+                    move = lastMove.Value;
+                    lastMove = null;
+                    inputReceived = true;
+                    break;
+                }
+
+                await Task.Delay(50); // Delay to avoid CPU usage spike
             }
-            return move - 1;
+
+            return move;
+        }
+
+        public void SetLastMoveFromKey(char key)
+        {
+            if (int.TryParse(key.ToString(), out int move))
+            {
+                move--; // Adjust the move index
+                lastMove = move;
+            }
         }
     }
+
+
+
+
+
+
 
     class AIPlayer : IPlayer
     {
@@ -49,6 +75,11 @@ namespace Connect4Group1FinalProject
         {
             Console.WriteLine("AI is thinking...");
             Task.Delay(1000).Wait();
+
+            if (Console.KeyAvailable && Console.ReadKey(true).Key == ConsoleKey.Escape)
+            {
+                return Task.FromResult(-1);
+            }
 
             int move = Minimax(board, difficulty, int.MinValue, int.MaxValue, true).move;
 
