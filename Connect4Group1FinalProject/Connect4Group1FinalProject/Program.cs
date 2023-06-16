@@ -126,6 +126,7 @@ namespace Connect4Group1FinalProject
         {
             Console.WriteLine($"\nSelect AI {aiPlayerType} difficulty (1-10): ");
             Console.WriteLine("WARNING: Higher difficulty means more time the AI needs to think");
+            Console.WriteLine("WARNING: Due to how the AI works, if you pause during its move it will show what the AI is simulating.");
             int aiDifficulty;
             while (true)
             {
