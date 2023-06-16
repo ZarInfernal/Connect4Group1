@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Runtime.Remoting.Messaging;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -13,6 +14,7 @@ namespace Connect4Group1FinalProject
         private IPlayer currentPlayer;
         private List<string> moveRecords;
         private bool gamePaused;
+        private bool mainMenu;
 
         public ConnectFourGame(IPlayer player1, IPlayer player2)
         {
@@ -21,6 +23,7 @@ namespace Connect4Group1FinalProject
             this.player2 = player2;
             moveRecords = new List<string>();
             gamePaused = false;
+            mainMenu = false;
         }
 
         public void StartGame()
@@ -29,7 +32,7 @@ namespace Connect4Group1FinalProject
             
             Task.Run(PlayerInputLoop);
 
-            while (true)
+            while (!mainMenu)
             {
 
                 
@@ -42,6 +45,8 @@ namespace Connect4Group1FinalProject
                     try
                     {
                         move = GetPlayerMoveAsync(currentPlayer).GetAwaiter().GetResult();
+                        if (move == -1)
+                            break;
                     }
                     catch (Exception e)
                     {
@@ -188,14 +193,11 @@ namespace Connect4Group1FinalProject
             int move = -1;
             bool inputReceived = false;
 
-            while (!inputReceived)
+            while (!inputReceived && !mainMenu)
             {
                 move = await player.GetMove(board);
 
-                if (move == -1) // Check if move is canceled (escape key pressed)
-                {
-                    Console.WriteLine("Move canceled. Try again.");
-                }
+                if (move == -1){ }// Check if move is canceled (escape key pressed)
                 else if (move < 0 || move >= Board.Cols)
                 {
                     Console.WriteLine("Invalid column. Try again.");
@@ -230,8 +232,12 @@ namespace Connect4Group1FinalProject
                             Console.Clear();
                             board.PrintBoard(moveRecords);
                             if (!ShowPauseMenuOptions())
+                            {
+                                mainMenu = true;
+                                var player = (Player)currentPlayer;
+                                player.returnToMainMenu();
                                 return;
-
+                            }
                         }
                         else if (currentPlayer is Player)
                         {
@@ -247,5 +253,6 @@ namespace Connect4Group1FinalProject
                 Thread.Sleep(50);
             }
         }
+        
     }
 }

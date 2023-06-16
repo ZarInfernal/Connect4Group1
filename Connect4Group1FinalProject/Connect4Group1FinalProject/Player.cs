@@ -10,12 +10,14 @@ namespace Connect4Group1FinalProject
         public string playerName { get; }
 
         private int? lastMove;
+        public bool mainMenu;
 
         public Player(CellState playerType, string playerName)
         {
             this.playerType = playerType;
             this.playerName = playerName;
             lastMove = null;
+            mainMenu = false;
         }
 
         public async Task<int> GetMove(Board board)
@@ -23,7 +25,7 @@ namespace Connect4Group1FinalProject
             int move = -1;
             bool inputReceived = false;
 
-            while (!inputReceived)
+            while (!inputReceived && !mainMenu)
             {
                 if (lastMove.HasValue)
                 {
@@ -39,6 +41,11 @@ namespace Connect4Group1FinalProject
             return move;
         }
 
+        public void returnToMainMenu()
+        {
+            mainMenu = true;
+        }
+
         public void SetLastMoveFromKey(char key)
         {
             if (int.TryParse(key.ToString(), out int move))
@@ -48,11 +55,6 @@ namespace Connect4Group1FinalProject
             }
         }
     }
-
-
-
-
-
 
 
     class AIPlayer : IPlayer

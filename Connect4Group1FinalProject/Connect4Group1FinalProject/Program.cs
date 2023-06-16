@@ -25,6 +25,7 @@ namespace Connect4Group1FinalProject
         CellState playerType { get; }
         string playerName { get; }
         Task<int> GetMove(Board board);
+
     }
 
     class Program
