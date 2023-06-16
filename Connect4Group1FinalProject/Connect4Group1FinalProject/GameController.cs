@@ -120,6 +120,9 @@ namespace Connect4Group1FinalProject
                     return true;
                 case 2:
                     ResetGame();
+                    Console.Clear();
+                    board.PrintBoard(moveRecords);
+                    Console.WriteLine($"Current player: {currentPlayer.playerName}");
                     return true;
                 case 3:
                     Console.Clear();
