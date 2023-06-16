@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Threading;
 using System.Threading.Tasks;
 
 namespace Connect4Group1FinalProject
@@ -11,6 +12,8 @@ namespace Connect4Group1FinalProject
 
         private int? lastMove;
         public bool mainMenu;
+
+        private SemaphoreSlim moveLock = new SemaphoreSlim(1, 1);
 
         public Player(CellState playerType, string playerName)
         {
@@ -27,14 +30,20 @@ namespace Connect4Group1FinalProject
 
             while (!inputReceived && !mainMenu)
             {
-                if (lastMove.HasValue)
+                await moveLock.WaitAsync();
+                try
                 {
-                    move = lastMove.Value;
-                    lastMove = null;
-                    inputReceived = true;
-                    break;
+                    if (lastMove.HasValue)
+                    {
+                        move = lastMove.Value;
+                        lastMove = null;
+                        inputReceived = true;
+                    }
                 }
-
+                finally
+                {
+                    moveLock.Release();
+                }
                 await Task.Delay(50); // Delay to avoid CPU usage spike
             }
 
@@ -51,7 +60,16 @@ namespace Connect4Group1FinalProject
             if (int.TryParse(key.ToString(), out int move))
             {
                 move--; // Adjust the move index
-                lastMove = move;
+
+                moveLock.Wait();
+                try
+                {
+                    lastMove = move;
+                }
+                finally 
+                {
+                    moveLock.Release(); 
+                }
             }
         }
     }

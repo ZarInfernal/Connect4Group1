@@ -177,7 +177,7 @@ namespace Connect4Group1FinalProject
         {
             board.ClearBoard();
             moveRecords.Clear();
-            currentPlayer = player1;
+            currentPlayer = player2;
             gamePaused = false;
         }
 
