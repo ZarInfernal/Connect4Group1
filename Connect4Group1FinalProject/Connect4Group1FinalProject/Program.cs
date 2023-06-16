@@ -33,7 +33,6 @@ namespace Connect4Group1FinalProject
         static void Main(string[] args)
         {
             bool exitGame = false;
-            ConnectFourGame game = null;
 
             while (!exitGame)
             {
@@ -74,43 +73,42 @@ namespace Connect4Group1FinalProject
                         break;
                     }
 
-                    IPlayer player1, player2;
-                    switch (mode)
-                    {
-                        case 1:
-                            player1 = new Player(CellState.Xeno, GetPlayerName("Xeno", 'X'));
-                            player2 = new Player(CellState.Oni, GetPlayerName("Oni", 'O'));
-                            break;
-                        case 2:
-                            player1 = new Player(CellState.Xeno, GetPlayerName("Xeno", 'X'));
-                            player2 = new AIPlayer(CellState.Oni, GetAIDifficulty("Oni"), "Oni(O)");
-                            break;
-                        case 3:
-                            player1 = new AIPlayer(CellState.Xeno, GetAIDifficulty("Xeno"), "Xeno(X)");
-                            player2 = new AIPlayer(CellState.Oni, GetAIDifficulty("Oni"), "Oni(O)");
-                            break;
-                        default:
-                            throw new InvalidOperationException("Invalid game mode.");
-                    }
+                    PlayGame(mode);
 
-                    game = new ConnectFourGame(player1, player2);
-                    game.StartGame();
+                    Console.Clear();
+
+                    
                 }
-
-
-
-
                 catch (FormatException ex)
                 {
                     Console.WriteLine("An error occurred: " + ex.Message);
-                }
-                finally
-                {
-                    game = null;
-                    Console.Clear();
-                }
-                
+                }               
             }
+        }
+
+        static void PlayGame(int mode)
+        {
+            IPlayer player1, player2;
+            switch (mode)
+            {
+                case 1:
+                    player1 = new Player(CellState.Xeno, GetPlayerName("Xeno", 'X'));
+                    player2 = new Player(CellState.Oni, GetPlayerName("Oni", 'O'));
+                    break;
+                case 2:
+                    player1 = new Player(CellState.Xeno, GetPlayerName("Xeno", 'X'));
+                    player2 = new AIPlayer(CellState.Oni, GetAIDifficulty("Oni"), "Oni(O)");
+                    break;
+                case 3:
+                    player1 = new AIPlayer(CellState.Xeno, GetAIDifficulty("Xeno"), "Xeno(X)");
+                    player2 = new AIPlayer(CellState.Oni, GetAIDifficulty("Oni"), "Oni(O)");
+                    break;
+                default:
+                    throw new InvalidOperationException("Invalid game mode.");
+            }
+
+            ConnectFourGame game = new ConnectFourGame(player1, player2);
+            game.StartGame();
         }
 
         static string GetPlayerName(string playerType, char display)
