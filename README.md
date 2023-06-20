@@ -56,7 +56,7 @@ The Connect Four game is implemented using the following classes:
      - `EvaluateBoard(board)`: Evaluates the score of the game board for the AI player.
      - `EvaluateLine(board, startRow, startCol, rowIncrement, colIncrement)`: Evaluates the score of a line of cells on the game board.
 
-4. **GameController Class**: RThe `GameController` class controls the flow of the Connect Four game, manages the game state, and handles user input.
+4. **GameController Class**: The `GameController` class controls the flow of the Connect Four game, manages the game state, and handles user input.
 
    - Properties:
      - `board`: An instance of the `Board` class representing the game board.
