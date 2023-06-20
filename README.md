@@ -15,43 +15,66 @@ The Connect Four Game is a two-player board game where the objective is to be th
 ## Class Structure
 The Connect Four game is implemented using the following classes:
 
-1. **Board**: Represents the game board and contains methods to interact with the board, such as placing a disc, checking if a column is full, and checking for a winning condition.
+1. **Board Class**: Represents the game board and contains methods to interact with the board, such as placing a disc, checking if a column is full, and checking for a winning condition.
    - Properties:
      - `Rows`: A constant representing the number of rows on the board (6).
      - `Cols`: A constant representing the number of columns on the board (7).
-     - `cells`: A 2D array of `CellState` representing the cells on the board.
+   
    - Methods:
      - `InitializeBoard()`: Initializes the board by setting all cells to `CellState.Empty`.
-     - `IsColumnFull(col)`: Checks if a specific column is already full.
-     - `PlaceDisc(col, player)`: Places a disc of the specified player in the specified column.
+     - `ClearBoard()`: Clears the board and resets all cells to `CellState.Empty`.
+     - `IsColumnFull(col)`: Checks if a specific column is already full. Returns a boolean value.
+     - `GetCell(row, col)`: Retrieves the `CellState` at the specified row and column on the board.
+     - `PlaceDisc(col, player)`: Places a disc of the specified player in the specified column. Returns a boolean value indicating if the disc was successfully placed.
      - `RemoveDisc(col)`: Removes the top disc from the specified column.
-     - `IsGameOver(player)`: Checks if the game is over by determining if the specified player has won.
-     - `PrintBoard()`: Displays the current state of the game board.
+     - `IsGameOver(player)`: Checks if the game is over by determining if the specified player has won. Returns a boolean value.
+     - `PrintBoard(moveRecords)`: Displays the current state of the game board. Accepts a list of move records as a parameter.
+   
+   The `Board` class maintains a 2D array called `cells`, which represents the cells on the board. Each cell is of type `CellState`, which can be one of the following:
+     - `CellState.Empty`: Represents an empty cell on the board.
+     - `CellState.Xeno`: Represents a cell occupied by a disc of the Xeno player.
+     - `CellState.Oni`: Represents a cell occupied by a disc of the Oni player.
 
-2. **Player**: Represents a player in the game and contains methods for obtaining the player's move.
+2. **Player Class**: Represents a player in the game and contains methods for obtaining the player's move.
    - Properties:
      - `PlayerColor`: The color (`CellState`) of the player's discs.
+     - `playerName`: The name of the player.
+
    - Methods:
      - `GetMove(board)`: Retrieves the player's move by prompting for input. Returns the selected column as an integer.
+     - `returnToMainMenu()`: Sets a flag indicating that the player wants to return to the main menu.
+     - `SetLastMoveFromKey(key)`: Sets the player's last move based on the key input.
 
-3. **AIPlayer**: Extends the `Player` class and represents an AI player. It includes additional methods for the AI's move selection.
+3. **AIPlayer Class**: Extends the `Player` class and represents an AI player. It includes additional methods for the AI's move selection.
    - Properties:
      - `random`: An instance of the `Random` class for generating random moves.
-     - `delay`: The delay time in milliseconds for the AI's move.
+     - `difficulty`: The difficulty level of the AI player.
+
    - Methods:
      - `GetMove(board)`: Overrides the `GetMove` method of the `Player` class to implement AI logic for move selection.
-     - `GetWinningMove(board)`: Checks if there is a winning move available for the AI player.
-     - `GetBlockingMove(board)`: Checks if there is a blocking move available to prevent the opponent from winning.
-     - `GetRandomMove(board)`: Selects a random valid move for the AI player.
+     - `Minimax(board, depth, alpha, beta, maximizingPlayer)`: Implements the minimax algorithm for AI move selection.
+     - `EvaluateBoard(board)`: Evaluates the score of the game board for the AI player.
+     - `EvaluateLine(board, startRow, startCol, rowIncrement, colIncrement)`: Evaluates the score of a line of cells on the game board.
 
-4. **ConnectFourGame**: Represents the Connect Four game itself and manages the gameplay loop.
+4. **GameController Class**: RThe `GameController` class controls the flow of the Connect Four game, manages the game state, and handles user input.
+
    - Properties:
      - `board`: An instance of the `Board` class representing the game board.
-     - `player1`: An instance of the `Player` class representing the first player.
-     - `player2`: An instance of the `Player` class representing the second player.
+     - `player1`: An instance of the `IPlayer` interface representing the first player.
+     - `player2`: An instance of the `IPlayer` interface representing the second player.
+     - `currentPlayer`: An instance of the `IPlayer` interface representing the current player.
+     - `moveRecords`: A list of strings representing the move records made by the players.
+     - `gamePaused`: A boolean indicating whether the game is currently paused.
+     - `mainMenu`: A boolean indicating whether the game is in the main menu.
+       
    - Methods:
-     - `Start()`: Starts the game and handles the main gameplay loop.
-     - `IsBoardFull()`: Checks if the game board is full.
+     - `StartGame()`: Starts the Connect Four game.
+     - `ShowPauseMenuOptions()`: Displays the pause menu options and handles user input. Returns a boolean value indicating whether to resume the game or go to the main menu.
+     - `ShowEndGameOptions()`: Displays the end game options and handles user input. Returns a boolean value indicating whether to reset the game or go to the main menu.
+     - `ResetGame()`: Resets the game by clearing the board, move records, and setting the current player to player2.
+     - `ClearInputBuffer()`: Clears the input buffer by consuming any available key presses.
+     - `GetPlayerMoveAsync(player)`: Asynchronously gets the player's move. Returns a Task<int> representing the column chosen by the player.
+     - `PlayerInputLoop()`: Monitors and handles player input, including pausing the game and cancelling moves.
 
 ## Game Modes
 The Connect Four game supports the following game modes:
@@ -59,10 +82,13 @@ The Connect Four game supports the following game modes:
 1. **Human vs. Human**: Both players are human players, taking turns to play on the same machine. They take turns entering their moves by specifying the column number (1-7) where they want to drop their disc.
 2. **Human vs. AI**: One player is a human player, and the other player is an AI player. The human player enters their moves as in the Human vs. Human mode, while the AI opponent uses the minimax algorithm to make its moves.
 3. **AI vs. AI**: Both players are AI players, and the game is fully automated. Both AI players use the minimax algorithm with different difficulty levels to make their moves.
+4. Exit Game: This option allows you to exit the game.
+
+To select a game mode, enter the corresponding number (1-4) when prompted.
 
 ## Player Types
 1. Human: A human player who interacts with the game by entering moves through the command line.
-2. AI: An AI player that uses the minimax algorithm to make intelligent moves.
+2. AI: Represents an AI player who can make intelligent moves based on predefined strategies.
 
 ## Game Board
 - The game board is represented as a grid of cells. Each cell can be in one of three states:
